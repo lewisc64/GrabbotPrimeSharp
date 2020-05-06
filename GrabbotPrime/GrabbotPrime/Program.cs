@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using GrabbotPrime.Component;
 using Driscod;
+using NLog;
 
 namespace GrabbotPrime
 {
@@ -14,6 +10,10 @@ namespace GrabbotPrime
     {
         static void Main(string[] args)
         {
+            var config = new NLog.Config.LoggingConfiguration();
+            config.AddRule(LogLevel.Debug, LogLevel.Fatal, new NLog.Targets.ConsoleTarget("logconsole"));
+            NLog.LogManager.Configuration = config;
+
             var client = new MongoClient("mongodb://localhost");
             var database = client.GetDatabase("grabbotprime");
             var componentsCollection = database.GetCollection<BsonDocument>("components");

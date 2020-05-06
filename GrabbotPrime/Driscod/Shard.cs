@@ -24,6 +24,8 @@ namespace Driscod
 
     public class Shard
     {
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
         private string _token;
 
         private int _shardNumber;
@@ -58,19 +60,25 @@ namespace Driscod
             },
         };
 
+        public string Name => $"SHARD-{_shardNumber}";
+
         public Shard(string token, int shardNumber, int totalShards)
         {
             _token = token;
             _shardNumber = shardNumber;
             _totalShards = totalShards;
 
-            _heartThread = new Thread(Heart);
+            _heartThread = new Thread(Heart)
+            {
+                Name = $"{Name}-HEART",
+                IsBackground = true,
+            };
 
             _socket = new WebSocket(Connectivity.GetWebSocketEndpoint());
 
             AddListener(MessageType.Any, data =>
             {
-                Console.WriteLine($"<- {data?.ToString() ?? "(no data)"}");
+                Logger.Debug($"[{Name}] <- {data?.ToString() ?? "(no data)"}");
             });
 
             AddListener(MessageType.Hello, data =>
@@ -88,12 +96,13 @@ namespace Driscod
 
         public void Start()
         {
+            Logger.Info($"[{Name}] Starting...");
             _socket.Open();
         }
 
         public void Heart()
         {
-            Console.WriteLine("Heart started.");
+            Logger.Info($"[{Name}] Heart started.");
 
             _heartbeatAcknowledged = true;
 
@@ -111,13 +120,13 @@ namespace Driscod
                     while (!_heartbeatAcknowledged && stopwatch.Elapsed.Seconds < 10) { }
                     if (!_heartbeatAcknowledged)
                     {
-                        Console.WriteLine("Nothing from the venous system.");
+                        Logger.Warn($"[{Name}] Nothing from the venous system.");
                         break;
                     }
                     stopwatch.Restart();
                 }
             }
-            Console.WriteLine("Heart stopped, scheduling restart.");
+            Logger.Warn($"[{Name}] Heart stopped, scheduling restart.");
         }
 
         public void Send(MessageType type, BsonValue data = null)
@@ -130,7 +139,7 @@ namespace Driscod
             {
                 response["d"] = data;
             }
-            Console.WriteLine($"-> {response.ToString()}");
+            Logger.Debug($"[{Name}] -> {response.ToString()}");
             _socket.Send(response.ToString());
         }
 
