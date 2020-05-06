@@ -7,8 +7,8 @@
     <ProjectGuid>{6E90D02B-DC9D-4E29-B611-06177FA7C7D5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ClassLibrary1</RootNamespace>
-    <AssemblyName>ClassLibrary1</AssemblyName>
+    <RootNamespace>Driscod</RootNamespace>
+    <AssemblyName>Driscod</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -81,7 +81,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bot.cs" />
     <Compile Include="Connectivity.cs" />
+    <Compile Include="DiscordObjects\Channel.cs" />
+    <Compile Include="DiscordObjects\Emoji.cs" />
+    <Compile Include="DiscordObjects\Guild.cs" />
+    <Compile Include="DiscordObjects\DiscordObject.cs" />
+    <Compile Include="DiscordObjects\Presence.cs" />
+    <Compile Include="DiscordObjects\Role.cs" />
+    <Compile Include="DiscordObjects\User.cs" />
+    <Compile Include="Extensions\BsonDocumentExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Shard.cs" />
   </ItemGroup>

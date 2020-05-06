@@ -40,6 +40,8 @@ namespace Driscod
 
         private bool _heartbeatAcknowledged = false;
 
+        public bool Ready { get; private set; }
+
         private string SessionId { get; set; }
 
         private int Sequence { get; set; }
@@ -88,6 +90,8 @@ namespace Driscod
                 _heartThread.Start();
             });
 
+            AddListener(MessageType.Dispatch, _ => Ready = true, eventName: "READY");
+
             AddListener(MessageType.HeartbeatAck, data =>
             {
                 _heartbeatAcknowledged = true;
@@ -98,6 +102,12 @@ namespace Driscod
         {
             Logger.Info($"[{Name}] Starting...");
             _socket.Open();
+        }
+
+        public void Stop()
+        {
+            Logger.Info($"[{Name}] Stopping...");
+            _socket.Close();
         }
 
         public void Heart()
@@ -127,6 +137,7 @@ namespace Driscod
                 }
             }
             Logger.Warn($"[{Name}] Heart stopped, scheduling restart.");
+            Ready = false;
         }
 
         public void Send(MessageType type, BsonValue data = null)
@@ -143,16 +154,17 @@ namespace Driscod
             _socket.Send(response.ToString());
         }
 
-        public EventHandler<MessageReceivedEventArgs> AddListener(MessageType type, Action<BsonDocument> handler)
+        public EventHandler<MessageReceivedEventArgs> AddListener(MessageType type, Action<BsonDocument> handler, string eventName = null)
         {
             var listener = new EventHandler<MessageReceivedEventArgs>((sender, message) =>
             {
                 var doc = BsonDocument.Parse(message.Message);
+                Logger.Info(doc.GetValueOrNull("t"));
                 if (doc.Contains("s") && !doc["s"].IsBsonNull)
                 {
                     Sequence = doc["s"].AsInt32;
                 }
-                if (type == MessageType.Any || doc["op"] == (int)type)
+                if ((type == MessageType.Any || doc["op"] == (int)type) && (eventName == null || eventName == doc["t"].AsString))
                 {
                     handler(doc["d"].IsBsonNull ? null : doc["d"].AsBsonDocument);
                 }
