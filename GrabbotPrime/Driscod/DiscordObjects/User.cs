@@ -1,22 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MongoDB.Bson;
 
 namespace Driscod.DiscordObjects
 {
     public class User : DiscordObject, IMessageable
     {
+        public string Username { get; private set; }
+
+        public string Discriminator { get; private set; }
+
+        public string Avatar { get; private set; }
+
         public void SendMessage(string message)
         {
             throw new NotImplementedException();
         }
 
-        public override void UpdateFromDocument(BsonDocument document)
+        internal override void UpdateFromDocument(BsonDocument document)
         {
-            throw new NotImplementedException();
+            Id = document["id"].AsString;
+            Username = document["username"].AsString;
+            Discriminator = document["discriminator"].AsString;
+            Avatar = document.GetValueOrNull("avatar")?.AsString;
         }
     }
 }

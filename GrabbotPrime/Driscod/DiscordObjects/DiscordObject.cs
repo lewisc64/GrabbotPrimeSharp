@@ -17,6 +17,6 @@ namespace Driscod.DiscordObjects
         {
         }
 
-        public abstract void UpdateFromDocument(BsonDocument doc);
+        internal abstract void UpdateFromDocument(BsonDocument doc);
     }
 }

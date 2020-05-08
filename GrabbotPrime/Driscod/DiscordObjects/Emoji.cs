@@ -16,7 +16,7 @@ namespace Driscod.DiscordObjects
 
         public bool Animated { get; private set; }
 
-        public override void UpdateFromDocument(BsonDocument doc)
+        internal override void UpdateFromDocument(BsonDocument doc)
         {
             Id = doc["id"].AsString;
             Roles = doc["roles"].AsBsonArray;

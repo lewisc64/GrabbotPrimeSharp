@@ -24,7 +24,7 @@ namespace Driscod.DiscordObjects
 
         public PresenceStatus Status { get; private set; }
 
-        public override void UpdateFromDocument(BsonDocument doc)
+        internal override void UpdateFromDocument(BsonDocument doc)
         {
             UserId = doc["user"]["id"].AsString;
             switch (doc["status"].AsString)

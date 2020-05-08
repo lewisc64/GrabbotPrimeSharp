@@ -18,7 +18,7 @@ namespace Driscod.DiscordObjects
 
         public int Color { get; private set; }
 
-        public override void UpdateFromDocument(BsonDocument doc)
+        internal override void UpdateFromDocument(BsonDocument doc)
         {
             Id = doc["id"].AsString;
             Position = doc["position"].AsInt32;

@@ -20,7 +20,7 @@ namespace Driscod.DiscordObjects
 
         public IEnumerable<Emoji> Emojis => _emojiIds.Select(x => Bot.GetObject<Emoji>(x));
 
-        public IEnumerable<Channel> Channels => _channelIds.Select(x => Bot.GetObject<Channel>(x));
+        public IEnumerable<Channel> Channels => _channelIds.Select(x => Bot.GetObject<Channel>(x)).OrderBy(x => x.Position);
 
         public string VanityUrlCode { get; private set; }
 
@@ -44,7 +44,7 @@ namespace Driscod.DiscordObjects
 
         public int PremiumSubscriptionCount { get; private set; }
 
-        public void UpdatePresence(BsonDocument doc)
+        internal void UpdatePresence(BsonDocument doc)
         {
             var presence = Presences.FirstOrDefault(x => x.UserId == doc["user"]["id"].AsString);
             if (presence == null)
@@ -56,7 +56,7 @@ namespace Driscod.DiscordObjects
             presence.UpdateFromDocument(doc);
         }
 
-        public void UpdateRole(BsonDocument doc)
+        internal void UpdateRole(BsonDocument doc)
         {
             var role = Roles.FirstOrDefault(x => x.Id == doc["id"].AsString);
             if (role == null)
@@ -68,9 +68,26 @@ namespace Driscod.DiscordObjects
             role.UpdateFromDocument(doc);
         }
 
-        public override void UpdateFromDocument(BsonDocument doc)
+        internal void DeleteRole(string roleId)
+        {
+            lock (Roles)
+            {
+                Roles.RemoveAll(x => x.Id == roleId);
+            }
+        }
+
+        internal override void UpdateFromDocument(BsonDocument doc)
         {
             Id = doc["id"].AsString;
+
+            if (doc.Contains("members"))
+            {
+                foreach (var memberDoc in doc["members"].AsBsonArray.Cast<BsonDocument>())
+                {
+                    // TODO
+                    Bot.CreateOrUpdateObject<User>(memberDoc["user"].AsBsonDocument);
+                }
+            }
 
             if (doc.Contains("presences"))
             {
@@ -115,6 +132,7 @@ namespace Driscod.DiscordObjects
                 _channelIds.Clear();
                 foreach (var channelDoc in doc["channels"].AsBsonArray.Cast<BsonDocument>())
                 {
+                    channelDoc["guild_id"] = Id;
                     Bot.CreateOrUpdateObject<Channel>(channelDoc);
                     _channelIds.Add(channelDoc["id"].AsString);
                 }

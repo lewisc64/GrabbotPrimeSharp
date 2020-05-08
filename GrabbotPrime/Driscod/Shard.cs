@@ -1,6 +1,7 @@
 ﻿using MongoDB.Bson;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using WebSocket4Net;
 
@@ -36,7 +37,7 @@ namespace Driscod
 
         private WebSocket _socket;
 
-        private Thread _heartThread;
+        private Thread _heartThread = null;
 
         private bool _heartbeatAcknowledged = false;
 
@@ -70,12 +71,6 @@ namespace Driscod
             _shardNumber = shardNumber;
             _totalShards = totalShards;
 
-            _heartThread = new Thread(Heart)
-            {
-                Name = $"{Name}-HEART",
-                IsBackground = true,
-            };
-
             _socket = new WebSocket(Connectivity.GetWebSocketEndpoint());
 
             AddListener(MessageType.Any, data =>
@@ -87,14 +82,25 @@ namespace Driscod
             {
                 _heartbeatInterval = data["heartbeat_interval"].AsInt32;
                 Send(MessageType.Identify, Identity);
+                _heartThread = new Thread(Heart)
+                {
+                    Name = $"{Name}-HEART",
+                    IsBackground = true,
+                };
                 _heartThread.Start();
             });
 
-            AddListener(MessageType.Dispatch, _ => Ready = true, eventName: "READY");
+            AddListener(MessageType.Dispatch, "READY", _ => Ready = true);
 
             AddListener(MessageType.HeartbeatAck, data =>
             {
                 _heartbeatAcknowledged = true;
+            });
+
+            AddListener(MessageType.InvalidSession, data =>
+            {
+                Logger.Warn($"[{Name}] Invalid session.");
+                Restart();
             });
         }
 
@@ -106,8 +112,18 @@ namespace Driscod
 
         public void Stop()
         {
+            Ready = false;
             Logger.Info($"[{Name}] Stopping...");
             _socket.Close();
+            while (_socket.State != WebSocketState.Closed) { }
+        }
+
+        public void Restart()
+        {
+            Logger.Info($"[{Name}] Restarting...");
+            Stop();
+            while (_heartThread != null && _heartThread.IsAlive) { }
+            Start();
         }
 
         public void Heart()
@@ -136,8 +152,7 @@ namespace Driscod
                     stopwatch.Restart();
                 }
             }
-            Logger.Warn($"[{Name}] Heart stopped, scheduling restart.");
-            Ready = false;
+            Logger.Warn($"[{Name}] Heart stopped.");
         }
 
         public void Send(MessageType type, BsonValue data = null)
@@ -154,19 +169,29 @@ namespace Driscod
             _socket.Send(response.ToString());
         }
 
-        public EventHandler<MessageReceivedEventArgs> AddListener(MessageType type, Action<BsonDocument> handler, string eventName = null)
+        public EventHandler<MessageReceivedEventArgs> AddListener(MessageType type, Action<BsonDocument> handler)
+        {
+            return AddListener(type, new string[0], handler);
+        }
+
+        public EventHandler<MessageReceivedEventArgs> AddListener(MessageType type, string eventName, Action<BsonDocument> handler)
+        {
+            return AddListener(type, new[] { eventName }, handler);
+        }
+
+        public EventHandler<MessageReceivedEventArgs> AddListener(MessageType type, string[] eventNames, Action<BsonDocument> handler)
         {
             var listener = new EventHandler<MessageReceivedEventArgs>((sender, message) =>
             {
                 var doc = BsonDocument.Parse(message.Message);
-                Logger.Info(doc.GetValueOrNull("t"));
+
                 if (doc.Contains("s") && !doc["s"].IsBsonNull)
                 {
                     Sequence = doc["s"].AsInt32;
                 }
-                if ((type == MessageType.Any || doc["op"] == (int)type) && (eventName == null || eventName == doc["t"].AsString))
+                if ((type == MessageType.Any || doc["op"] == (int)type) && (!eventNames.Any() || eventNames.Contains(doc["t"].AsString)))
                 {
-                    handler(doc["d"].IsBsonNull ? null : doc["d"].AsBsonDocument);
+                    handler(!doc["d"].IsBsonDocument ? null : doc["d"].AsBsonDocument);
                 }
             });
             _socket.MessageReceived += listener;

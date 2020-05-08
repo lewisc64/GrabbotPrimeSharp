@@ -6,6 +6,8 @@ namespace Driscod
 {
     public static class Connectivity
     {
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
         public const string HttpApiEndpoint = "https://discordapp.com/api/v6";
 
         public static string GetWebSocketEndpoint()
