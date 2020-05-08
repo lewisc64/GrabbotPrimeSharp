@@ -6,8 +6,6 @@ namespace Driscod.DiscordObjects
 {
     public class Guild : DiscordObject
     {
-        private List<string> _memberIds = new List<string>();
-
         private List<string> _emojiIds = new List<string>();
 
         private List<string> _channelIds = new List<string>();
@@ -15,8 +13,6 @@ namespace Driscod.DiscordObjects
         public List<Presence> Presences { get; private set; } = new List<Presence>();
 
         public List<Role> Roles { get; private set; } = new List<Role>();
-
-        public IEnumerable<User> Users => _memberIds.Select(x => Bot.GetObject<User>(x));
 
         public IEnumerable<Emoji> Emojis => _emojiIds.Select(x => Bot.GetObject<Emoji>(x));
 

@@ -1,14 +1,15 @@
 ﻿using MongoDB.Bson;
-using System;
 using System.Net.Http;
 
 namespace Driscod
 {
     public static class Connectivity
     {
-        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-
         public const string HttpApiEndpoint = "https://discordapp.com/api/v6";
+
+        public const string ChannelMessagePathFormat = "channels/{0}/messages";
+
+        public const int GatewayEventsPerMinute = 120 - 20; // slightly less for safety
 
         public static string GetWebSocketEndpoint()
         {

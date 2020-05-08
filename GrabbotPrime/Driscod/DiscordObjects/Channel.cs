@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MongoDB.Bson;
 
 namespace Driscod.DiscordObjects
@@ -55,7 +51,7 @@ namespace Driscod.DiscordObjects
                 throw new ArgumentException("Message must be less than or equal to 2000 characters.", nameof(message));
             }
 
-            Bot.SendJson("channels/{0}/messages", new[] { Id }, new BsonDocument
+            Bot.SendJson(Connectivity.ChannelMessagePathFormat, new[] { Id }, new BsonDocument
             {
                 { "content", message },
             });

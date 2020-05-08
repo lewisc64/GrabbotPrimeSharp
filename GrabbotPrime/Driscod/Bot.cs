@@ -14,9 +14,9 @@ namespace Driscod
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private Dictionary<string, string> RateLimitPathBucketMap { get; set; } = new Dictionary<string, string>();
+        public Dictionary<Tuple<string, string>, string> RateLimitPathBucketMap { get; set; } = new Dictionary<Tuple<string, string>, string>();
 
-        private Dictionary<string, RateLimit> RateLimits { get; set; } = new Dictionary<string, RateLimit>();
+        public Dictionary<string, RateLimit> RateLimits { get; set; } = new Dictionary<string, RateLimit>();
 
         private Dictionary<Type, Dictionary<string, DiscordObject>> Objects { get; set; } = new Dictionary<Type, Dictionary<string, DiscordObject>>();
 
@@ -37,6 +37,7 @@ namespace Driscod
                     _httpClient = new HttpClient();
                     _httpClient.BaseAddress = new Uri(Connectivity.HttpApiEndpoint);
                     _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bot {_token}");
+                    _httpClient.DefaultRequestHeaders.Add("X-RateLimit-Precision", "millisecond");
                 }
                 return _httpClient;
             }
@@ -55,12 +56,17 @@ namespace Driscod
         public Bot(string token)
         {
             _token = token;
+
             CreateShards(token);
             CreateDispatchListeners();
         }
 
         public void Start()
         {
+            if (BsonDocument.Parse(HttpClient.GetAsync("gateway/bot").Result.Content.ReadAsStringAsync().Result)["session_start_limit"]["remaining"].AsInt32 == 0)
+            {
+                throw new InvalidOperationException("Bot cannot start, session creation limit met.");
+            }
             foreach (var shard in _shards)
             {
                 shard.Start();
@@ -98,9 +104,12 @@ namespace Driscod
                 return response;
             };
 
-            if (RateLimitPathBucketMap.ContainsKey(pathFormat))
+            // only take first (major) param into consideration for rate limits.
+            var key = new Tuple<string, string>(pathFormat, pathParams.FirstOrDefault());
+
+            if (RateLimitPathBucketMap.ContainsKey(key))
             {
-                RateLimits[RateLimitPathBucketMap[pathFormat]].LockAndWait(requestFunc);
+                RateLimits[RateLimitPathBucketMap[key]].LockAndWait(requestFunc);
             }
             else
             {
@@ -108,7 +117,7 @@ namespace Driscod
                 if (response.Headers.Contains("X-RateLimit-Bucket"))
                 {
                     var bucketId = response.Headers.First(x => x.Key.ToLower() == "X-RateLimit-Bucket".ToLower()).Value.First();
-                    RateLimitPathBucketMap[pathFormat] = bucketId;
+                    RateLimitPathBucketMap[key] = bucketId;
                     if (!RateLimits.ContainsKey(bucketId))
                     {
                         RateLimits[bucketId] = new RateLimit(bucketId);
@@ -194,7 +203,7 @@ namespace Driscod
                         var message = new Message();
                         message.Bot = this;
                         message.UpdateFromDocument(data);
-                        OnMessage.Invoke(this, message);
+                        OnMessage?.Invoke(this, message);
                     });
 
                 shard.AddListener(

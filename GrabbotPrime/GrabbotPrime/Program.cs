@@ -1,12 +1,6 @@
 ﻿using System;
-using MongoDB.Bson;
-using MongoDB.Driver;
 using Driscod;
 using NLog;
-using System.Threading;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
 
 namespace GrabbotPrime
 {
@@ -23,6 +17,7 @@ namespace GrabbotPrime
             // var componentsCollection = database.GetCollection<BsonDocument>("components");
 
             var bot = new Bot(Environment.GetEnvironmentVariable("TESTBOT_TOKEN", EnvironmentVariableTarget.User));
+
             bot.Start();
 
             bot.OnMessage += (_, message) =>

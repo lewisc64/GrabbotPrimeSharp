@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -46,6 +47,8 @@ namespace Driscod
         private string SessionId { get; set; }
 
         private int Sequence { get; set; }
+
+        private List<DateTime> LimitTracker { get; set; } = new List<DateTime>();
 
         private BsonDocument Identity => new BsonDocument
         {
@@ -155,6 +158,18 @@ namespace Driscod
             Logger.Warn($"[{Name}] Heart stopped.");
         }
 
+        public void RateLimitWait(Action callback)
+        {
+            do
+            {
+                LimitTracker.RemoveAll(x => (DateTime.UtcNow - x).TotalSeconds > 60);
+            }
+            while (LimitTracker.Count >= Connectivity.GatewayEventsPerMinute);
+
+            LimitTracker.Add(DateTime.UtcNow);
+            callback();
+        }
+
         public void Send(MessageType type, BsonValue data = null)
         {
             var response = new BsonDocument
@@ -165,8 +180,11 @@ namespace Driscod
             {
                 response["d"] = data;
             }
-            Logger.Debug($"[{Name}] -> {response.ToString()}");
-            _socket.Send(response.ToString());
+            RateLimitWait(() =>
+            {
+                Logger.Debug($"[{Name}] -> {response.ToString()}");
+                _socket.Send(response.ToString());
+            });
         }
 
         public EventHandler<MessageReceivedEventArgs> AddListener(MessageType type, Action<BsonDocument> handler)

@@ -26,7 +26,7 @@ namespace Driscod
         {
             if (headers.Contains("X-RateLimit-Reset"))
             {
-                ResetAt = new DateTime(1970, 1, 1, 0, 0, 0).AddSeconds(long.Parse(headers.GetFirstValue("X-RateLimit-Reset")));
+                ResetAt = new DateTime(1970, 1, 1, 0, 0, 0).AddSeconds(double.Parse(headers.GetFirstValue("X-RateLimit-Reset")));
             }
             if (headers.Contains("X-RateLimit-Limit"))
             {
@@ -58,6 +58,8 @@ namespace Driscod
 
                     response = callback();
                     UpdateFromHeaders(response.Headers);
+
+                    int.TryParse(response.Headers.GetFirstValueOrNull("Retry-After"), out retryAfter);
                 }
                 while (response.StatusCode == (System.Net.HttpStatusCode)429);
             }
