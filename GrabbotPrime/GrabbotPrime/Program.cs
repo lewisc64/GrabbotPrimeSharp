@@ -28,7 +28,7 @@ namespace GrabbotPrime
                 }
             };
 
-            Console.ReadKey();
+            Console.ReadLine();
         }
     }
 }

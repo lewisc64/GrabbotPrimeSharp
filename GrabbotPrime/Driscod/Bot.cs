@@ -63,10 +63,16 @@ namespace Driscod
 
         public void Start()
         {
-            if (BsonDocument.Parse(HttpClient.GetAsync("gateway/bot").Result.Content.ReadAsStringAsync().Result)["session_start_limit"]["remaining"].AsInt32 == 0)
+            var remainingConnections = BsonDocument.Parse(HttpClient.GetAsync("gateway/bot").Result.Content.ReadAsStringAsync().Result)["session_start_limit"]["remaining"].AsInt32;
+            if (remainingConnections == 0)
             {
                 throw new InvalidOperationException("Bot cannot start, session creation limit met.");
             }
+            else if (remainingConnections < 50)
+            {
+                Logger.Warn($"{remainingConnections} session creations remain.");
+            }
+
             foreach (var shard in _shards)
             {
                 shard.Start();

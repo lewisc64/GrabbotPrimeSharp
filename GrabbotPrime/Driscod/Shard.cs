@@ -48,6 +48,8 @@ namespace Driscod
 
         private int Sequence { get; set; }
 
+        private bool ShouldResume { get; set; }
+
         private List<DateTime> LimitTracker { get; set; } = new List<DateTime>();
 
         private BsonDocument Identity => new BsonDocument
@@ -76,6 +78,15 @@ namespace Driscod
 
             _socket = new WebSocket(Connectivity.GetWebSocketEndpoint());
 
+            _socket.Closed += (a, b) =>
+            {
+                Logger.Warn("Socket closed.");
+                if (ShouldResume)
+                {
+                    _socket.Open();
+                }
+            };
+
             AddListener(MessageType.Any, data =>
             {
                 Logger.Debug($"[{Name}] <- {data?.ToString() ?? "(no data)"}");
@@ -84,7 +95,22 @@ namespace Driscod
             AddListener(MessageType.Hello, data =>
             {
                 _heartbeatInterval = data["heartbeat_interval"].AsInt32;
-                Send(MessageType.Identify, Identity);
+
+                if (ShouldResume)
+                {
+                    Send(MessageType.Resume, new BsonDocument
+                    {
+                        { "token", _token },
+                        { "session_id", SessionId },
+                        { "seq", Sequence },
+                    });
+                }
+                else
+                {
+                    Send(MessageType.Identify, Identity);
+                    ShouldResume = true;
+                }
+                _heartThread?.Abort();
                 _heartThread = new Thread(Heart)
                 {
                     Name = $"{Name}-HEART",
@@ -93,7 +119,11 @@ namespace Driscod
                 _heartThread.Start();
             });
 
-            AddListener(MessageType.Dispatch, "READY", _ => Ready = true);
+            AddListener(MessageType.Dispatch, "READY", data =>
+            {
+                Ready = true;
+                SessionId = data["session_id"].AsString;
+            });
 
             AddListener(MessageType.HeartbeatAck, data =>
             {
@@ -103,29 +133,29 @@ namespace Driscod
             AddListener(MessageType.InvalidSession, data =>
             {
                 Logger.Warn($"[{Name}] Invalid session.");
-                Restart();
+                _socket.Close();
             });
         }
 
         public void Start()
         {
+            Ready = false;
             Logger.Info($"[{Name}] Starting...");
+            while (_heartThread != null && _heartThread.IsAlive) { }
             _socket.Open();
         }
 
         public void Stop()
         {
-            Ready = false;
             Logger.Info($"[{Name}] Stopping...");
+            ShouldResume = false;
             _socket.Close();
             while (_socket.State != WebSocketState.Closed) { }
         }
 
         public void Restart()
         {
-            Logger.Info($"[{Name}] Restarting...");
             Stop();
-            while (_heartThread != null && _heartThread.IsAlive) { }
             Start();
         }
 
