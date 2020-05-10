@@ -16,7 +16,11 @@ namespace Driscod.DiscordObjects
 
         public IEnumerable<Emoji> Emojis => _emojiIds.Select(x => Bot.GetObject<Emoji>(x));
 
-        public IEnumerable<Channel> Channels => _channelIds.Select(x => Bot.GetObject<Channel>(x)).OrderBy(x => x.Position);
+        public IEnumerable<Channel> Channels => _channelIds.Select(x => Bot.GetObject<Channel>(x));
+
+        public IEnumerable<Channel> TextChannels => Channels.Where(x => x.ChannelType == ChannelType.Text).OrderBy(x => x.Position);
+
+        public IEnumerable<Channel> VoiceChannels => Channels.Where(x => x.ChannelType == ChannelType.Voice).OrderBy(x => x.Position);
 
         public string VanityUrlCode { get; private set; }
 
@@ -70,6 +74,21 @@ namespace Driscod.DiscordObjects
             {
                 Roles.RemoveAll(x => x.Id == roleId);
             }
+        }
+
+        internal void UpdateChannel(BsonDocument doc)
+        {
+            Bot.CreateOrUpdateObject<Channel>(doc);
+            if (!_channelIds.Contains(doc["id"].AsString))
+            {
+                _channelIds.Add(doc["id"].AsString);
+            }
+        }
+
+        internal void DeleteChannel(string channelId)
+        {
+            Bot.DeleteObject<Channel>(channelId);
+            _channelIds.RemoveAll(x => x == channelId);
         }
 
         internal override void UpdateFromDocument(BsonDocument doc)
@@ -129,8 +148,7 @@ namespace Driscod.DiscordObjects
                 foreach (var channelDoc in doc["channels"].AsBsonArray.Cast<BsonDocument>())
                 {
                     channelDoc["guild_id"] = Id;
-                    Bot.CreateOrUpdateObject<Channel>(channelDoc);
-                    _channelIds.Add(channelDoc["id"].AsString);
+                    UpdateChannel(channelDoc);
                 }
             }
 

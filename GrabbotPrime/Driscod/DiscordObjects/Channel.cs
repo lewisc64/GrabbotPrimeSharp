@@ -11,6 +11,7 @@ namespace Driscod.DiscordObjects
     public enum ChannelType
     {
         Text = 0,
+        User = 1,
         Voice = 2,
     }
 
@@ -22,7 +23,9 @@ namespace Driscod.DiscordObjects
 
         public Guild Guild => Bot.GetObject<Guild>(_guildId);
 
-        public ChannelType MediumType { get; private set; }
+        public bool IsDm => ChannelType == ChannelType.User;
+
+        public ChannelType ChannelType { get; private set; }
 
         public string Topic { get; private set; }
 
@@ -36,9 +39,9 @@ namespace Driscod.DiscordObjects
 
         public void SendMessage(string message)
         {
-            if (MediumType != ChannelType.Text)
+            if (ChannelType == ChannelType.Voice)
             {
-                throw new InvalidOperationException($"Cannot send message to channel type {MediumType}.");
+                throw new InvalidOperationException($"Cannot send message to channel type {ChannelType}.");
             }
 
             if (string.IsNullOrEmpty(message))
@@ -71,9 +74,11 @@ namespace Driscod.DiscordObjects
                 switch (document["type"].AsInt32)
                 {
                     case 0:
-                        MediumType = ChannelType.Text; break;
+                        ChannelType = ChannelType.Text; break;
+                    case 1:
+                        ChannelType = ChannelType.User; break;
                     case 2:
-                        MediumType = ChannelType.Voice; break;
+                        ChannelType = ChannelType.Voice; break;
                     default:
                         Logger.Error($"Unknown channel type on channel '{Id}': {document["type"]}");
                         break;

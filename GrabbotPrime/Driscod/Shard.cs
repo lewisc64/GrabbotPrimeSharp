@@ -80,7 +80,7 @@ namespace Driscod
 
             _socket.Closed += (a, b) =>
             {
-                Logger.Warn("Socket closed.");
+                Logger.Warn($"[{Name}] Socket closed.");
                 if (ShouldResume)
                 {
                     _socket.Open();
@@ -163,27 +163,24 @@ namespace Driscod
         {
             Logger.Info($"[{Name}] Heart started.");
 
-            _heartbeatAcknowledged = true;
-
             var stopwatch = new Stopwatch();
-            stopwatch.Start();
 
+            Thread.Sleep(_heartbeatInterval);
             while (_socket.State == WebSocketState.Open)
             {
-                if (_heartbeatInterval != -1 && stopwatch.ElapsedMilliseconds >= _heartbeatInterval)
-                {
-                    _heartbeatAcknowledged = false;
-                    Send(MessageType.Heartbeat, Sequence);
+                _heartbeatAcknowledged = false;
+                Send(MessageType.Heartbeat, Sequence);
 
-                    stopwatch.Restart();
-                    while (!_heartbeatAcknowledged && stopwatch.Elapsed.Seconds < 10) { }
-                    if (!_heartbeatAcknowledged)
-                    {
-                        Logger.Warn($"[{Name}] Nothing from the venous system.");
-                        break;
-                    }
-                    stopwatch.Restart();
+                stopwatch.Restart();
+                while (!_heartbeatAcknowledged && stopwatch.Elapsed.Seconds < 10) { }
+                if (!_heartbeatAcknowledged)
+                {
+                    Logger.Warn($"[{Name}] Nothing from the venous system.");
+                    break;
                 }
+                stopwatch.Stop();
+
+                Thread.Sleep(_heartbeatInterval);
             }
             Logger.Warn($"[{Name}] Heart stopped.");
         }
@@ -239,7 +236,14 @@ namespace Driscod
                 }
                 if ((type == MessageType.Any || doc["op"] == (int)type) && (!eventNames.Any() || eventNames.Contains(doc["t"].AsString)))
                 {
-                    handler(!doc["d"].IsBsonDocument ? null : doc["d"].AsBsonDocument);
+                    try
+                    {
+                        handler(!doc["d"].IsBsonDocument ? null : doc["d"].AsBsonDocument);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Error(e, $"Handler for {type}{(eventNames.Length > 0 ? $" ({string.Join(", ", eventNames)})" : "")} failed: {e.Message}");
+                    }
                 }
             });
             _socket.MessageReceived += listener;

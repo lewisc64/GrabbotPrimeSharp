@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Threading;
 using Driscod;
 using NLog;
 
@@ -18,8 +20,6 @@ namespace GrabbotPrime
 
             var bot = new Bot(Environment.GetEnvironmentVariable("TESTBOT_TOKEN", EnvironmentVariableTarget.User));
 
-            bot.Start();
-
             bot.OnMessage += (_, message) =>
             {
                 if (message.Author != bot.User)
@@ -27,6 +27,8 @@ namespace GrabbotPrime
                     message.Channel.SendMessage(message.Content);
                 }
             };
+
+            bot.Start();
 
             Console.ReadLine();
         }

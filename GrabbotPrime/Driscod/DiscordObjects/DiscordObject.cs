@@ -13,6 +13,8 @@ namespace Driscod.DiscordObjects
 
         public Bot Bot { get; set; }
 
+        internal Shard DiscoveredOnShard { get; set; }
+
         public DiscordObject()
         {
         }

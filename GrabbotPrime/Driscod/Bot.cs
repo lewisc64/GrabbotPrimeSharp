@@ -51,6 +51,8 @@ namespace Driscod
 
         public IEnumerable<Channel> Channels => GetObjects<Channel>();
 
+        public bool Ready => _shards.All(x => x.Ready);
+
         public event EventHandler<Message> OnMessage;
 
         public Bot(string token)
@@ -64,7 +66,7 @@ namespace Driscod
         public void Start()
         {
             var remainingConnections = BsonDocument.Parse(HttpClient.GetAsync("gateway/bot").Result.Content.ReadAsStringAsync().Result)["session_start_limit"]["remaining"].AsInt32;
-            if (remainingConnections == 0)
+            if (remainingConnections < _shards.Count)
             {
                 throw new InvalidOperationException("Bot cannot start, session creation limit met.");
             }
@@ -78,7 +80,15 @@ namespace Driscod
                 shard.Start();
                 Thread.Sleep(5000); // hmm...
             }
-            while (!_shards.All(x => x.Ready)) { }
+            while (!Ready) { }
+        }
+
+        public void Stop()
+        {
+            foreach (var shard in _shards)
+            {
+                shard.Stop();
+            }
         }
 
         public BsonDocument SendJson(string pathFormat, string[] pathParams, BsonDocument doc)
@@ -155,7 +165,7 @@ namespace Driscod
             Objects[typeof(T)].Remove(id);
         }
 
-        internal void CreateOrUpdateObject<T>(BsonDocument doc)
+        internal void CreateOrUpdateObject<T>(BsonDocument doc, Shard discoveredBy = null)
             where T : DiscordObject, new()
         {
             var type = typeof(T);
@@ -171,6 +181,7 @@ namespace Driscod
             if (!table.ContainsKey(id))
             {
                 table[id] = new T();
+                table[id].DiscoveredOnShard = discoveredBy;
                 table[id].Bot = this;
             }
 
@@ -206,10 +217,14 @@ namespace Driscod
                     "MESSAGE_CREATE",
                     data =>
                     {
-                        var message = new Message();
-                        message.Bot = this;
-                        message.UpdateFromDocument(data);
-                        OnMessage?.Invoke(this, message);
+                        if (Ready)
+                        {
+                            var message = new Message();
+                            message.DiscoveredOnShard = shard;
+                            message.Bot = this;
+                            message.UpdateFromDocument(data);
+                            OnMessage?.Invoke(this, message);
+                        }
                     });
 
                 shard.AddListener(
@@ -217,7 +232,7 @@ namespace Driscod
                     new[] { "GUILD_CREATE", "GUILD_UPDATE" },
                     data =>
                     {
-                        CreateOrUpdateObject<Guild>(data);
+                        CreateOrUpdateObject<Guild>(data, discoveredBy: shard);
                     });
 
                 shard.AddListener(
@@ -230,11 +245,34 @@ namespace Driscod
 
                 shard.AddListener(
                     MessageType.Dispatch,
+                    new[] { "CHANNEL_CREATE", "CHANNEL_UPDATE" },
+                    data =>
+                    {
+                        if (data.Contains("guild_id"))
+                        {
+                            GetObject<Guild>(data["guild_id"].AsString).UpdateChannel(data);
+                        }
+                        else
+                        {
+                            CreateOrUpdateObject<Channel>(data);
+                        }
+                    });
+
+                shard.AddListener(
+                    MessageType.Dispatch,
+                    "CHANNEL_DELETE",
+                    data =>
+                    {
+                        GetObject<Guild>(data["guild_id"].AsString).DeleteChannel(data["id"].AsString);
+                    });
+
+                shard.AddListener(
+                    MessageType.Dispatch,
                     "GUILD_EMOJIS_UPDATE",
                     data =>
                     {
                         data["id"] = data["guild_id"];
-                        CreateOrUpdateObject<Guild>(data);
+                        CreateOrUpdateObject<Guild>(data, discoveredBy: shard);
                     });
 
                 shard.AddListener(
@@ -242,7 +280,7 @@ namespace Driscod
                     new[] { "GUILD_ROLE_CREATE", "GUILD_ROLE_UPDATE" },
                     data =>
                     {
-                        GetObject<Guild>(data["guild_id"].AsString)?.UpdateRole(data["role"].AsBsonDocument);
+                        GetObject<Guild>(data["guild_id"].AsString).UpdateRole(data["role"].AsBsonDocument);
                     });
 
                 shard.AddListener(
@@ -250,7 +288,7 @@ namespace Driscod
                     "GUILD_ROLE_DELETE",
                     data =>
                     {
-                        GetObject<Guild>(data["guild_id"].AsString)?.DeleteRole(data["role_id"].AsString);
+                        GetObject<Guild>(data["guild_id"].AsString).DeleteRole(data["role_id"].AsString);
                     });
 
                 shard.AddListener(
@@ -258,7 +296,7 @@ namespace Driscod
                     "PRESENCE_UPDATE",
                     data =>
                     {
-                        GetObject<Guild>(data["guild_id"].AsString)?.UpdatePresence(data);
+                        GetObject<Guild>(data["guild_id"].AsString).UpdatePresence(data);
                     });
             }
         }
