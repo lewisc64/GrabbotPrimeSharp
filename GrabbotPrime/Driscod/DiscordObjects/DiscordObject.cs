@@ -1,9 +1,4 @@
 ﻿using MongoDB.Bson;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Driscod.DiscordObjects
 {
@@ -15,7 +10,7 @@ namespace Driscod.DiscordObjects
 
         internal Shard DiscoveredOnShard { get; set; }
 
-        public DiscordObject()
+        protected DiscordObject()
         {
         }
 

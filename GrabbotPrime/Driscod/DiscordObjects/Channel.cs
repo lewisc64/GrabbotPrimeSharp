@@ -60,18 +60,18 @@ namespace Driscod.DiscordObjects
             });
         }
 
-        internal override void UpdateFromDocument(BsonDocument document)
+        internal override void UpdateFromDocument(BsonDocument doc)
         {
-            Id = document["id"].AsString;
+            Id = doc["id"].AsString;
 
-            if (document.Contains("guild_id"))
+            if (doc.Contains("guild_id"))
             {
-                _guildId = document["guild_id"].AsString;
+                _guildId = doc["guild_id"].AsString;
             }
 
-            if (document.Contains("type"))
+            if (doc.Contains("type"))
             {
-                switch (document["type"].AsInt32)
+                switch (doc["type"].AsInt32)
                 {
                     case 0:
                         ChannelType = ChannelType.Text; break;
@@ -80,34 +80,34 @@ namespace Driscod.DiscordObjects
                     case 2:
                         ChannelType = ChannelType.Voice; break;
                     default:
-                        Logger.Error($"Unknown channel type on channel '{Id}': {document["type"]}");
+                        Logger.Error($"Unknown channel type on channel '{Id}': {doc["type"]}");
                         break;
                 }
             }
 
-            if (document.Contains("topic"))
+            if (doc.Contains("topic"))
             {
-                Topic = document.GetValueOrNull("topic")?.AsString ?? "";
+                Topic = doc.GetValueOrNull("topic")?.AsString ?? "";
             }
 
-            if (document.Contains("position"))
+            if (doc.Contains("position"))
             {
-                Position = document["position"].AsInt32;
+                Position = doc["position"].AsInt32;
             }
 
-            if (document.Contains("permission_overwrites"))
+            if (doc.Contains("permission_overwrites"))
             {
-                PermissionOverwrites = document["permission_overwrites"].AsBsonArray;
+                PermissionOverwrites = doc["permission_overwrites"].AsBsonArray;
             }
 
-            if (document.Contains("name"))
+            if (doc.Contains("name"))
             {
-                Name = document["name"].AsString;
+                Name = doc["name"].AsString;
             }
 
-            if (document.Contains("bitrate"))
+            if (doc.Contains("bitrate"))
             {
-                Bitrate = document["bitrate"].AsInt32;
+                Bitrate = doc["bitrate"].AsInt32;
             }
         }
     }

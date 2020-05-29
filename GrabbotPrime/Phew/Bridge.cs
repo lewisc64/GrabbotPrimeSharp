@@ -13,6 +13,8 @@ namespace Phew
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
+        private static readonly string _discoveryUrl = $"https://discovery.meethue.com/";
+
         private string _ipAddress = null;
 
         private HttpClient httpClient = null;
@@ -36,8 +38,6 @@ namespace Phew
         }
 
         public bool Registered => Username != null;
-
-        public TimeSpan PollingInterval { get; set; } = new TimeSpan(0, 0, 5);
 
         private HttpClient HttpClient
         {
@@ -120,23 +120,12 @@ namespace Phew
             var response = HttpClient.SendAsync(message).Result;
             var parsed = ParseApiResponse(response);
 
-            if (parsed.IsBsonArray)
+            if (parsed.IsBsonArray && parsed.AsBsonArray.FirstOrDefault()?.AsBsonDocument.Contains("error") == true)
             {
-                if (parsed.AsBsonArray.FirstOrDefault()?.AsBsonDocument.Contains("error") == true)
-                {
-                    throw new InvalidOperationException($"Failed to {method.ToString()} to '{path}': {parsed.ToString()}");
-                }
+                throw new InvalidOperationException($"Failed to {method.ToString()} to '{path}': {parsed.ToString()}");
             }
 
             return parsed;
-        }
-
-        private void ThrowIfNotRegistered()
-        {
-            if (!Registered)
-            {
-                throw new InvalidOperationException($"Bridge {Id} is not registered.");
-            }
         }
 
         public static BsonValue ParseApiResponse(HttpResponseMessage response)
@@ -147,7 +136,7 @@ namespace Phew
         public static Dictionary<string, string> GetBridges()
         {
             var client = new HttpClient();
-            var result = ParseApiResponse(client.GetAsync("https://discovery.meethue.com/").Result);
+            var result = ParseApiResponse(client.GetAsync(_discoveryUrl).Result);
             return result.AsBsonArray.Cast<BsonDocument>().ToDictionary(x => x["id"].AsString, x => x["internalipaddress"].AsString);
         }
     }

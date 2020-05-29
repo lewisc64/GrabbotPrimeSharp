@@ -141,7 +141,10 @@ namespace Driscod
         {
             Ready = false;
             Logger.Info($"[{Name}] Starting...");
-            while (_heartThread != null && _heartThread.IsAlive) { }
+            while (_heartThread != null && _heartThread.IsAlive)
+            {
+                // intentionally empty
+            }
             _socket.Open();
         }
 
@@ -150,7 +153,10 @@ namespace Driscod
             Logger.Info($"[{Name}] Stopping...");
             ShouldResume = false;
             _socket.Close();
-            while (_socket.State != WebSocketState.Closed) { }
+            while (_socket.State != WebSocketState.Closed)
+            {
+                // intentionally empty
+            }
         }
 
         public void Restart()

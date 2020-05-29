@@ -22,7 +22,7 @@ namespace Driscod
 
         private List<Shard> _shards;
 
-        private string _token;
+        private readonly string _token;
 
         private string _userId;
 
@@ -57,9 +57,9 @@ namespace Driscod
 
         public Bot(string token)
         {
-            _token = token;
+            _token = token ?? throw new ArgumentNullException(nameof(token), "Token cannot be null.");
 
-            CreateShards(token);
+            CreateShards();
             CreateDispatchListeners();
         }
 
@@ -80,7 +80,10 @@ namespace Driscod
                 shard.Start();
                 Thread.Sleep(5000); // hmm...
             }
-            while (!Ready) { }
+            while (!Ready)
+            {
+                // intentionally empty
+            }
         }
 
         public void Stop()
@@ -188,7 +191,7 @@ namespace Driscod
             table[id].UpdateFromDocument(doc);
         }
 
-        private void CreateShards(string token)
+        private void CreateShards()
         {
             _shards = new List<Shard>();
 

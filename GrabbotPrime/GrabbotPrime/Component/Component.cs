@@ -4,35 +4,45 @@ using MongoDB.Driver;
 
 namespace GrabbotPrime.Component
 {
-    class ComponentBase
+    public static class ComponentRegistry
     {
-        private object _readWriteLock = new object();
-
-        private string _uuid;
-
-        private readonly IMongoCollection<BsonDocument> _collection;
-
-        public string Test
+        public static Type GetComponentTypeFromName(string name)
         {
-            get
+            switch (name)
             {
-                return GetPropertyByName("test")?.AsString;
-            }
-            set
-            {
-                SetPropertyByName("test", value);
+                case DiscordBot.ComponentTypeName:
+                    return typeof(DiscordBot);
+                default:
+                    throw new ArgumentException($"'{name}' is not a valid component.", nameof(name));
             }
         }
+    }
 
-        protected virtual string ComponentTypeName => "generic";
+    class ComponentBase
+    {
+        public const string ComponentTypeName = "generic";
+
+        private readonly object _readWriteLock = new object();
+
+        private readonly string _uuid;
+
+        private readonly IMongoCollection<BsonDocument> _collection;
 
         private BsonDocument InternalDocument
         {
             get
             {
-                return _collection
+                var doc = _collection
                     .FindAsync(Builders<BsonDocument>.Filter.Eq("uuid", _uuid)).Result
-                    .FirstOrDefault() ?? new BsonDocument { { "uuid", _uuid }, { "type", ComponentTypeName } };
+                    .FirstOrDefault();
+
+                if (doc == null)
+                {
+                    doc = new BsonDocument { { "uuid", _uuid }, { "type", MyComponentTypeName } };
+                    _collection.ReplaceOneAsync(Builders<BsonDocument>.Filter.Eq("uuid", _uuid), doc, new ReplaceOptions { IsUpsert = true }).Wait();
+                }
+
+                return doc;
             }
         }
 
@@ -40,6 +50,23 @@ namespace GrabbotPrime.Component
         {
             _collection = collection.WithWriteConcern(WriteConcern.Acknowledged);
             _uuid = uuid ?? Guid.NewGuid().ToString();
+        }
+
+        public Core Core { get; set; }
+
+        protected virtual string MyComponentTypeName => ComponentTypeName;
+
+        public virtual void Init()
+        {
+        }
+
+        public virtual void Tick()
+        {
+        }
+
+        public virtual void TickRare()
+        {
+
         }
 
         protected BsonValue GetPropertyByName(string name)
