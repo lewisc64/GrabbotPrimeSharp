@@ -7,7 +7,7 @@ namespace Driscod
 {
     public class RateLimit
     {
-        private object _lock = new object();
+        private readonly object _lock = new object();
 
         public string Id { get; private set; }
 
@@ -49,7 +49,6 @@ namespace Driscod
                     if (retryAfter != -1)
                     {
                         Thread.Sleep(retryAfter);
-                        retryAfter = -1;
                     }
                     if (Remaining == 0 && ResetAt != null)
                     {
@@ -59,7 +58,7 @@ namespace Driscod
                     response = callback();
                     UpdateFromHeaders(response.Headers);
 
-                    int.TryParse(response.Headers.GetFirstValueOrNull("Retry-After"), out retryAfter);
+                    retryAfter = int.Parse(response.Headers.GetFirstValueOrNull("Retry-After") ?? "-1");
                 }
                 while (response.StatusCode == (System.Net.HttpStatusCode)429);
             }

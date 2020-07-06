@@ -1,10 +1,15 @@
 ﻿using MongoDB.Bson;
+using System;
 using System.Net.Http;
 
 namespace Phew
 {
     public class Light
     {
+        private string _name;
+
+        private string _effect;
+
         private bool _on;
 
         private int _brightness;
@@ -13,11 +18,48 @@ namespace Phew
 
         private int _hue;
 
+        public bool AutoUpdateState { get; set; } = true;
+
         public int Number { get; private set; }
 
-        public string Name { get; private set; }
-
         public Bridge Bridge { get; private set; }
+
+        public string Name
+        {
+            get
+            {
+                return _name;
+            }
+
+            set
+            {
+                _name = value;
+                Update(new BsonDocument
+                {
+                    { "name", _name },
+                });
+            }
+        }
+
+        public string Effect
+        {
+            get
+            {
+                return _effect;
+            }
+
+            set
+            {
+                _effect = value;
+                if (AutoUpdateState)
+                {
+                    UpdateState(new BsonDocument
+                    {
+                        { "effect", _effect },
+                    });
+                }
+            }
+        }
 
         public bool On
         {
@@ -28,10 +70,13 @@ namespace Phew
             set
             {
                 _on = value;
-                UpdateState(new BsonDocument
+                if (AutoUpdateState)
                 {
-                    { "on", _on },
-                });
+                    UpdateState(new BsonDocument
+                    {
+                        { "on", _on },
+                    });
+                }
             }
         }
 
@@ -39,15 +84,18 @@ namespace Phew
         {
             get
             {
-                return 254D / _brightness;
+                return Math.Min(_brightness * 100 / 254D, 100);
             }
             set
             {
                 _brightness = (int)(254 * value / 100);
-                UpdateState(new BsonDocument
+                if (AutoUpdateState)
                 {
-                    { "bri", _brightness },
-                });
+                    UpdateState(new BsonDocument
+                    {
+                        { "bri", _brightness },
+                    });
+                }
             }
         }
 
@@ -55,15 +103,18 @@ namespace Phew
         {
             get
             {
-                return 254D / _saturation;
+                return Math.Min(_saturation * 100 / 254D, 100);
             }
             set
             {
                 _saturation = (int)(254 * value / 100);
-                UpdateState(new BsonDocument
+                if (AutoUpdateState)
                 {
-                    { "sat", _saturation },
-                });
+                    UpdateState(new BsonDocument
+                    {
+                        { "sat", _saturation },
+                    });
+                }
             }
         }
 
@@ -76,12 +127,17 @@ namespace Phew
             set
             {
                 _hue = (int)(65535 * ((value % 360) / 360));
-                UpdateState(new BsonDocument
+                if (AutoUpdateState)
                 {
-                    { "hue", _hue },
-                });
+                    UpdateState(new BsonDocument
+                    {
+                        { "hue", _hue },
+                    });
+                }
             }
         }
+
+        public int? TransitionTime { get; set; } = null;
 
         public Light(Bridge bridge, int number)
         {
@@ -96,12 +152,37 @@ namespace Phew
             _hue = document["state"]["bri"].AsInt32;
             _saturation = document["state"]["sat"].AsInt32;
 
-            Name = document["name"].AsString;
+            _name = document["name"].AsString;
         }
 
-        private BsonValue UpdateState(BsonDocument data)
+        public void UpdateState()
         {
-            return Bridge.SendApiRequest(HttpMethod.Put, $"api/{Bridge.Username}/lights/{Number}/state", data);
+            if (AutoUpdateState)
+            {
+                throw new InvalidOperationException("State is auto-updating.");
+            }
+            UpdateState(new BsonDocument
+            {
+                { "on", _on },
+                { "effect", _effect },
+                { "hue", _hue },
+                { "sat", _saturation },
+                { "bri", _brightness },
+            });
+        }
+
+        private void UpdateState(BsonDocument data)
+        {
+            if (TransitionTime != null)
+            {
+                data["transitiontime"] = TransitionTime.Value;
+            }
+            Bridge.SendApiRequest(HttpMethod.Put, $"api/{Bridge.Username}/lights/{Number}/state", data);
+        }
+
+        private void Update(BsonDocument data)
+        {
+            Bridge.SendApiRequest(HttpMethod.Put, $"api/{Bridge.Username}/lights/{Number}", data);
         }
     }
 }

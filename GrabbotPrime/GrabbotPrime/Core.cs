@@ -5,6 +5,7 @@ using MongoDB.Bson;
 using System.Linq;
 using System;
 using System.Threading;
+using GrabbotPrime.Commands;
 
 namespace GrabbotPrime
 {
@@ -30,6 +31,8 @@ namespace GrabbotPrime
         public bool Running { get; private set; } = false;
 
         private List<ComponentBase> Components { get; set; } = new List<ComponentBase>();
+
+        private IEnumerable<ICommand> Commands { get; set; } = CommandsRegistry.GetCommands();
 
         private IMongoDatabase Database => _mongoClient.GetDatabase(DatabaseName);
 
@@ -108,6 +111,18 @@ namespace GrabbotPrime
                     }
                 }
             }
+        }
+
+        public ICommand RecogniseCommand(string command)
+        {
+            foreach (var commandInstance in Commands)
+            {
+                if (commandInstance.Recognise(command))
+                {
+                    return commandInstance;
+                }
+            }
+            throw new ArgumentException("Command does not have a match.", nameof(command));
         }
     }
 }

@@ -28,19 +28,21 @@ namespace Driscod
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private string _token;
+        private readonly string _token;
 
-        private int _shardNumber;
+        private readonly int _shardNumber;
 
-        private int _totalShards;
+        private readonly int _totalShards;
+
+        private readonly WebSocket _socket;
 
         private int _heartbeatInterval = -1;
 
-        private WebSocket _socket;
-
         private Thread _heartThread = null;
 
+#pragma warning disable S1450
         private bool _heartbeatAcknowledged = false;
+#pragma warning restore S1450
 
         public bool Ready { get; private set; }
 
@@ -178,7 +180,10 @@ namespace Driscod
                 Send(MessageType.Heartbeat, Sequence);
 
                 stopwatch.Restart();
-                while (!_heartbeatAcknowledged && stopwatch.Elapsed.Seconds < 10) { }
+                while (!_heartbeatAcknowledged && stopwatch.Elapsed.Seconds < 10)
+                {
+                    // intentionally empty
+                }
                 if (!_heartbeatAcknowledged)
                 {
                     Logger.Warn($"[{Name}] Nothing from the venous system.");
@@ -242,14 +247,19 @@ namespace Driscod
                 }
                 if ((type == MessageType.Any || doc["op"] == (int)type) && (!eventNames.Any() || eventNames.Contains(doc["t"].AsString)))
                 {
-                    try
+                    var thread = new Thread(() =>
                     {
-                        handler(!doc["d"].IsBsonDocument ? null : doc["d"].AsBsonDocument);
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Error(e, $"Handler for {type}{(eventNames.Length > 0 ? $" ({string.Join(", ", eventNames)})" : "")} failed: {e.Message}");
-                    }
+                        try
+                        {
+                            handler(!doc["d"].IsBsonDocument ? null : doc["d"].AsBsonDocument);
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.Error(e, $"[{Name}] Handler for {type}{(eventNames.Length > 0 ? $" ({string.Join(", ", eventNames)})" : "")} failed: {e.Message}");
+                        }
+                    });
+                    thread.IsBackground = true;
+                    thread.Start();
                 }
             });
             _socket.MessageReceived += listener;

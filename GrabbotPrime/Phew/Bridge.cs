@@ -11,6 +11,10 @@ namespace Phew
 {
     public class Bridge
     {
+        private const int MaxUpdatesPerSecond = 10;
+
+        private const int MinTimeBetweenUpdates = 150;
+
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
         private static readonly string _discoveryUrl = $"https://discovery.meethue.com/";
@@ -18,6 +22,8 @@ namespace Phew
         private string _ipAddress = null;
 
         private HttpClient httpClient = null;
+
+        private readonly List<DateTime> _requestTimeBuffer = new List<DateTime>();
 
         public string Id { get; private set; }
 
@@ -77,7 +83,7 @@ namespace Phew
             BsonDocument responseData;
             while (true)
             {
-                responseData = SendApiRequest(HttpMethod.Post, string.Empty, identity)
+                responseData = SendApiRequest(HttpMethod.Post, string.Empty, identity, detectError: false)
                     .AsBsonArray
                     .Cast<BsonDocument>()
                     .Single();
@@ -110,21 +116,24 @@ namespace Phew
             }
         }
 
-        public BsonValue SendApiRequest(HttpMethod method, string path, BsonDocument data = null)
+        public BsonValue SendApiRequest(HttpMethod method, string path, BsonDocument data = null, bool detectError = true)
         {
-            var message = new HttpRequestMessage(method, path);
-            if (data != null)
+            BsonValue parsed = null;
+            WaitForRateLimit(() =>
             {
-                message.Content = new StringContent(data.ToString(), Encoding.UTF8, "application/json");
-            }
-            var response = HttpClient.SendAsync(message).Result;
-            var parsed = ParseApiResponse(response);
+                var message = new HttpRequestMessage(method, path);
+                if (data != null)
+                {
+                    message.Content = new StringContent(data.ToString(), Encoding.UTF8, "application/json");
+                }
+                var response = HttpClient.SendAsync(message).Result;
+                parsed = ParseApiResponse(response);
 
-            if (parsed.IsBsonArray && parsed.AsBsonArray.FirstOrDefault()?.AsBsonDocument.Contains("error") == true)
-            {
-                throw new InvalidOperationException($"Failed to {method.ToString()} to '{path}': {parsed.ToString()}");
-            }
-
+                if (detectError && parsed.IsBsonArray && parsed.AsBsonArray.FirstOrDefault()?.AsBsonDocument.Contains("error") == true)
+                {
+                    throw new InvalidOperationException($"Failed to {method.ToString()} to '{path}': {parsed.ToString()}");
+                }
+            });
             return parsed;
         }
 
@@ -138,6 +147,38 @@ namespace Phew
             var client = new HttpClient();
             var result = ParseApiResponse(client.GetAsync(_discoveryUrl).Result);
             return result.AsBsonArray.Cast<BsonDocument>().ToDictionary(x => x["id"].AsString, x => x["internalipaddress"].AsString);
+        }
+
+        private void WaitForRateLimit(Action callback)
+        {
+            lock (_requestTimeBuffer)
+            {
+                if (_requestTimeBuffer.Count >= MaxUpdatesPerSecond)
+                {
+                    var sleepTime = new TimeSpan(0, 0, 1) - (DateTime.UtcNow - _requestTimeBuffer.First());
+                    if (sleepTime.TotalSeconds > 0)
+                    {
+                        Thread.Sleep(sleepTime);
+                    }
+                }
+                do
+                {
+                    _requestTimeBuffer.RemoveAll(x => (DateTime.UtcNow - x).TotalSeconds >= 1);
+                } while (_requestTimeBuffer.Count >= MaxUpdatesPerSecond);
+
+                if (_requestTimeBuffer.Any())
+                {
+                    var diff = (int)(DateTime.UtcNow - _requestTimeBuffer.Last()).TotalMilliseconds;
+                    if (diff < MinTimeBetweenUpdates)
+                    {
+                        Thread.Sleep(MinTimeBetweenUpdates - diff);
+                    }
+                }
+
+                callback();
+
+                _requestTimeBuffer.Add(DateTime.UtcNow);
+            }
         }
     }
 }

@@ -66,7 +66,6 @@ namespace GrabbotPrime.Component
 
         public virtual void TickRare()
         {
-
         }
 
         protected BsonValue GetPropertyByName(string name)

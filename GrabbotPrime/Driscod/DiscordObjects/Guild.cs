@@ -6,9 +6,9 @@ namespace Driscod.DiscordObjects
 {
     public class Guild : DiscordObject
     {
-        private List<string> _emojiIds = new List<string>();
+        private readonly List<string> _emojiIds = new List<string>();
 
-        private List<string> _channelIds = new List<string>();
+        private readonly List<string> _channelIds = new List<string>();
 
         public List<Presence> Presences { get; private set; } = new List<Presence>();
 

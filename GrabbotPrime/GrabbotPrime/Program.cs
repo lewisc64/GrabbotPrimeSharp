@@ -1,8 +1,11 @@
-﻿using NLog;
+﻿using Driscod;
+using NLog;
+using System;
+using System.Threading;
 
 namespace GrabbotPrime
 {
-    class Program
+    static class Program
     {
         static void Main(string[] args)
         {
@@ -10,7 +13,7 @@ namespace GrabbotPrime
             config.AddRule(LogLevel.Debug, LogLevel.Fatal, new NLog.Targets.ConsoleTarget("logconsole"));
             NLog.LogManager.Configuration = config;
 
-            var Core = new Core("mongodb://localhost/");
+            var Core = new Core($"mongodb://localhost/");
             Core.Start();
         }
     }

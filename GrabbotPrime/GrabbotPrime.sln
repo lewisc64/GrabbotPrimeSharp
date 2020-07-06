@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Phew", "Phew\Phew.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Driscod", "Driscod\Driscod.csproj", "{12CF17C0-A6E7-4030-A221-6DB4565D59D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenLighting", "RandomTests\ScreenLighting.csproj", "{FD639E32-8A22-44D8-9816-917B0C3E9639}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenLighting", "ScreenLighting\ScreenLighting.csproj", "{FD639E32-8A22-44D8-9816-917B0C3E9639}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
