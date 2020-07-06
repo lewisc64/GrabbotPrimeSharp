@@ -7,9 +7,11 @@ namespace GrabbotPrime.Commands
     {
         public static IEnumerable<ICommand> GetCommands()
         {
-            return new[]
+            return new ICommand[]
             {
                 new GreenBottles(),
+                new PingPong(),
+                new Unknown(),
             };
         }
     }

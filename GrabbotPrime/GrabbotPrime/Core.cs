@@ -19,18 +19,20 @@ namespace GrabbotPrime
 
         private readonly IMongoClient _mongoClient;
 
+#pragma warning disable S1450 // Private fields only used as local variables in methods should become local variables
         private Thread _tickThread;
+#pragma warning restore S1450 // Private fields only used as local variables in methods should become local variables
 
-        public Core(string databaseUri)
+        public Core(IMongoClient mongoClient)
         {
-            _mongoClient = new MongoClient(databaseUri);
+            _mongoClient = mongoClient;
 
             LoadComponents();
         }
 
         public bool Running { get; private set; } = false;
 
-        private List<ComponentBase> Components { get; set; } = new List<ComponentBase>();
+        private List<IComponent> Components { get; set; } = new List<IComponent>();
 
         private IEnumerable<ICommand> Commands { get; set; } = CommandsRegistry.GetCommands();
 
@@ -69,7 +71,7 @@ namespace GrabbotPrime
         }
 
         public T CreateComponent<T>(string uuid = null)
-            where T : ComponentBase
+            where T : IComponent
         {
             if (uuid == null)
             {
@@ -84,11 +86,39 @@ namespace GrabbotPrime
             {
                 Components.Last().Init();
             }
-            return (T)Components.Last();
+
+            var component = (T)Components.Last();
+
+            Logger.Info($"Created component '{component}'.");
+
+            return component;
+        }
+
+        public T CreateComponentIfNotExists<T>(string uuid = null)
+            where T : IComponent
+        {
+            if (uuid == null)
+            {
+                var component = Components.FirstOrDefault(x => x.GetType() == typeof(T));
+                if (component != null)
+                {
+                    return (T)component;
+                }
+            }
+            else
+            {
+                var component = Components.FirstOrDefault(x => x.Uuid == uuid);
+                if (component != null)
+                {
+                    return (T)component;
+                }
+            }
+
+            return CreateComponent<T>(uuid);
         }
 
         public IEnumerable<T> GetComponents<T>()
-            where T : ComponentBase
+            where T : IComponent
         {
             return Components.Where(x => x is T).Cast<T>();
         }
@@ -101,13 +131,18 @@ namespace GrabbotPrime
                 Components.Clear();
                 foreach (var document in RemoteComponentsCollection.FindAsync(Builders<BsonDocument>.Filter.Exists("uuid")).Result.ToEnumerable())
                 {
-                    Logger.Debug($"Component found: {document["type"].AsString}, {document["uuid"].AsString}");
                     Type componentType = ComponentRegistry.GetComponentTypeFromName(document["type"].AsString);
+
                     Components.Add((ComponentBase)Activator.CreateInstance(componentType, new object[] { RemoteComponentsCollection, document["uuid"].AsString }));
-                    Components.Last().Core = this;
+                    var component = Components.Last();
+
+                    component.Core = this;
+
+                    Logger.Info($"Found component '{component}'.");
+
                     if (Running)
                     {
-                        Components.Last().Init();
+                        component.Init();
                     }
                 }
             }

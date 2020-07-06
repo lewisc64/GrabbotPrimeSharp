@@ -1,7 +1,6 @@
-﻿using Driscod;
+﻿using GrabbotPrime.Component;
+using MongoDB.Driver;
 using NLog;
-using System;
-using System.Threading;
 
 namespace GrabbotPrime
 {
@@ -13,7 +12,11 @@ namespace GrabbotPrime
             config.AddRule(LogLevel.Debug, LogLevel.Fatal, new NLog.Targets.ConsoleTarget("logconsole"));
             NLog.LogManager.Configuration = config;
 
-            var Core = new Core($"mongodb://localhost/");
+            var Core = new Core(new MongoClient($"mongodb://localhost/"));
+
+            Core.CreateComponentIfNotExists<DiscordBot>();
+            Core.CreateComponentIfNotExists<ConsoleWindow>();
+
             Core.Start();
         }
     }

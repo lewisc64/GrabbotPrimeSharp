@@ -10,21 +10,32 @@ namespace GrabbotPrime.Component
         {
             switch (name)
             {
-                case DiscordBot.ComponentTypeName:
+                case nameof(DiscordBot):
                     return typeof(DiscordBot);
+                case nameof(ConsoleWindow):
+                    return typeof(ConsoleWindow);
                 default:
                     throw new ArgumentException($"'{name}' is not a valid component.", nameof(name));
             }
         }
     }
 
-    class ComponentBase
+    internal interface IComponent
     {
-        public const string ComponentTypeName = "generic";
+        Core Core { get; set; }
 
+        string Uuid { get; }
+
+        void Init();
+
+        void Tick();
+
+        void TickRare();
+    }
+
+    internal abstract class ComponentBase : IComponent
+    {
         private readonly object _readWriteLock = new object();
-
-        private readonly string _uuid;
 
         private readonly IMongoCollection<BsonDocument> _collection;
 
@@ -33,39 +44,47 @@ namespace GrabbotPrime.Component
             get
             {
                 var doc = _collection
-                    .FindAsync(Builders<BsonDocument>.Filter.Eq("uuid", _uuid)).Result
+                    .FindAsync(Builders<BsonDocument>.Filter.Eq("uuid", Uuid)).Result
                     .FirstOrDefault();
 
                 if (doc == null)
                 {
-                    doc = new BsonDocument { { "uuid", _uuid }, { "type", MyComponentTypeName } };
-                    _collection.ReplaceOneAsync(Builders<BsonDocument>.Filter.Eq("uuid", _uuid), doc, new ReplaceOptions { IsUpsert = true }).Wait();
+                    doc = new BsonDocument { { "uuid", Uuid }, { "type", GetType().Name } };
+                    _collection.ReplaceOneAsync(Builders<BsonDocument>.Filter.Eq("uuid", Uuid), doc, new ReplaceOptions { IsUpsert = true }).Wait();
                 }
 
                 return doc;
             }
         }
 
-        public ComponentBase(IMongoCollection<BsonDocument> collection, string uuid = null)
+        protected ComponentBase(IMongoCollection<BsonDocument> collection, string uuid = null)
         {
             _collection = collection.WithWriteConcern(WriteConcern.Acknowledged);
-            _uuid = uuid ?? Guid.NewGuid().ToString();
+            Uuid = uuid ?? Guid.NewGuid().ToString();
         }
 
         public Core Core { get; set; }
 
-        protected virtual string MyComponentTypeName => ComponentTypeName;
+        public string Uuid { get; }
 
         public virtual void Init()
         {
+            // Method intentionally left empty.
         }
 
         public virtual void Tick()
         {
+            // Method intentionally left empty.
         }
 
         public virtual void TickRare()
         {
+            // Method intentionally left empty.
+        }
+
+        public override string ToString()
+        {
+            return $"{GetType().Name} {Uuid}";
         }
 
         protected BsonValue GetPropertyByName(string name)
@@ -84,7 +103,7 @@ namespace GrabbotPrime.Component
                 var doc = InternalDocument;
                 doc[name] = value;
 
-                _collection.ReplaceOneAsync(Builders<BsonDocument>.Filter.Eq("uuid", _uuid), doc, new ReplaceOptions { IsUpsert = true }).Wait();
+                _collection.ReplaceOneAsync(Builders<BsonDocument>.Filter.Eq("uuid", Uuid), doc, new ReplaceOptions { IsUpsert = true }).Wait();
             }
         }
     }

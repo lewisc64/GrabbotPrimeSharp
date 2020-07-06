@@ -91,9 +91,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\Chat\Unknown.cs" />
     <Compile Include="Commands\Command.cs" />
-    <Compile Include="Commands\Test.cs" />
+    <Compile Include="Commands\Chat\PingPong.cs" />
+    <Compile Include="Commands\Chat\GreenBottles.cs" />
     <Compile Include="Component\Component.cs" />
+    <Compile Include="Component\ConsoleWindow.cs" />
     <Compile Include="Component\DiscordBot.cs" />
     <Compile Include="Core.cs" />
     <Compile Include="Program.cs" />
@@ -104,13 +107,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Driscod\Driscod.csproj">
+    <ProjectReference Include="..\..\..\Driscod\Driscod\Driscod\Driscod.csproj">
       <Project>{12CF17C0-A6E7-4030-A221-6DB4565D59D9}</Project>
       <Name>Driscod</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Phew\Phew.csproj">
-      <Project>{0B910E49-5E4A-4DF2-82CE-051FEEF865A0}</Project>
-      <Name>Phew</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

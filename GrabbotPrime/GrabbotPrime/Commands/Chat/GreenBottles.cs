@@ -7,7 +7,7 @@ namespace GrabbotPrime.Commands
     {
         public bool Recognise(string message)
         {
-            return message == "testbot, do the green bottle song";
+            return message == "do the green bottle song";
         }
 
         public void Run(string message, Action<string> messageSendCallback, Func<string> waitForMessageCallback)

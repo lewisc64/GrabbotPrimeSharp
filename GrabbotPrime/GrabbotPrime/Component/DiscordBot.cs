@@ -14,8 +14,6 @@ namespace GrabbotPrime.Component
 
         private static readonly HashSet<Channel> _handledChannels = new HashSet<Channel>();
 
-        public new const string ComponentTypeName = "discordBot";
-
         private string Token
         {
             get
@@ -33,17 +31,16 @@ namespace GrabbotPrime.Component
         {
         }
 
-        protected override string MyComponentTypeName => ComponentTypeName;
-
         private Bot bot { get; set; }
 
         public override void Init()
         {
             base.Init();
 
-            if (Token == null)
+            if (Token == null || Token == "CHANGE_ME")
             {
-                Logger.Fatal("Token is null, bot cannot start.");
+                Token = "CHANGE_ME";
+                Logger.Fatal("Token is not set, bot cannot start. Set the token manually in the database.");
                 return;
             }
 
@@ -65,7 +62,6 @@ namespace GrabbotPrime.Component
             {
                 return;
             }
-
 
             _handledChannels.Add(initialMessage.Channel);
 
