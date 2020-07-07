@@ -20,7 +20,7 @@ namespace GrabbotPrime.Component
         }
     }
 
-    internal interface IComponent
+    public interface IComponent
     {
         Core Core { get; set; }
 
@@ -33,7 +33,7 @@ namespace GrabbotPrime.Component
         void TickRare();
     }
 
-    internal abstract class ComponentBase : IComponent
+    public abstract class ComponentBase : IComponent
     {
         private readonly object _readWriteLock = new object();
 

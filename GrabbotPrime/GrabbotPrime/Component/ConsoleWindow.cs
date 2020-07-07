@@ -18,7 +18,10 @@ namespace GrabbotPrime.Component
 
         public override void Init()
         {
-            _listenThread = new Thread(Listen);
+            _listenThread = new Thread(Listen)
+            {
+                Name = $"ConsoleWindow Listener ({Uuid})",
+            };
             _listenThread.Start();
         }
 

@@ -3,14 +3,14 @@ using System.Threading;
 
 namespace GrabbotPrime.Commands
 {
-    class GreenBottles : ICommand
+    class GreenBottles : CommandBase
     {
-        public bool Recognise(string message)
+        public override bool Recognise(string message)
         {
             return message == "do the green bottle song";
         }
 
-        public void Run(string message, Action<string> messageSendCallback, Func<string> waitForMessageCallback)
+        public override void Run(string message, Action<string> messageSendCallback, Func<string> waitForMessageCallback)
         {
             var i = 100;
 

@@ -9,7 +9,7 @@ using GrabbotPrime.Commands;
 
 namespace GrabbotPrime
 {
-    class Core
+    public class Core
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -51,6 +51,11 @@ namespace GrabbotPrime
             foreach (var component in Components)
             {
                 component.Init();
+            }
+
+            foreach (var command in Commands)
+            {
+                command.Core = this;
             }
 
             Running = true;

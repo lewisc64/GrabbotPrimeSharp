@@ -10,6 +10,7 @@ namespace GrabbotPrime.Commands
             return new ICommand[]
             {
                 new GreenBottles(),
+                new CoinFlip(),
                 new PingPong(),
                 new Unknown(),
             };
@@ -18,8 +19,19 @@ namespace GrabbotPrime.Commands
     
     public interface ICommand
     {
+        Core Core { get; set; }
+
         bool Recognise(string message);
 
         void Run(string message, Action<string> messageSendCallback, Func<string> waitForMessageCallback);
+    }
+
+    public abstract class CommandBase : ICommand
+    {
+        public Core Core { get; set; }
+
+        public abstract bool Recognise(string message);
+
+        public abstract void Run(string message, Action<string> messageSendCallback, Func<string> waitForMessageCallback);
     }
 }

@@ -2,14 +2,14 @@
 
 namespace GrabbotPrime.Commands
 {
-    class PingPong : ICommand
+    class PingPong : CommandBase
     {
-        public bool Recognise(string message)
+        public override bool Recognise(string message)
         {
             return message == "ping";
         }
 
-        public void Run(string message, Action<string> messageSendCallback, Func<string> waitForMessageCallback)
+        public override void Run(string message, Action<string> messageSendCallback, Func<string> waitForMessageCallback)
         {
             messageSendCallback("pong");
         }
