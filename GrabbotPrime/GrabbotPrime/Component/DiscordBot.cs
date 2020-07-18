@@ -5,6 +5,7 @@ using Driscod.DiscordObjects;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
+using System.Text.RegularExpressions;
 
 namespace GrabbotPrime.Component
 {
@@ -26,16 +27,50 @@ namespace GrabbotPrime.Component
             }
         }
 
+        private string CommandRegex
+        {
+            get
+            {
+                return GetPropertyByName("commandRegex")?.AsString;
+            }
+            set
+            {
+                SetPropertyByName("commandRegex", value);
+            }
+        }
+
+        private int? CommandTimeoutMilliseconds
+        {
+            get
+            {
+                return GetPropertyByName("commandTimeoutMilliseconds")?.AsInt32;
+            }
+            set
+            {
+                SetPropertyByName("commandTimeoutMilliseconds", value);
+            }
+        }
+
+        private Bot Bot { get; set; }
+
         public DiscordBot(IMongoCollection<BsonDocument> collection, string uuid = null)
             : base(collection, uuid: uuid)
         {
         }
 
-        private Bot bot { get; set; }
-
         public override void Init()
         {
             base.Init();
+
+            if (CommandRegex == null)
+            {
+                CommandRegex = @"^!(.+)$";
+            }
+
+            if (CommandTimeoutMilliseconds == null)
+            {
+                CommandTimeoutMilliseconds = 60000;
+            }
 
             if (Token == null || Token == "CHANGE_ME")
             {
@@ -44,12 +79,12 @@ namespace GrabbotPrime.Component
                 return;
             }
 
-            bot = new Bot(Token);
-            bot.Start();
+            Bot = new Bot(Token);
+            Bot.Start();
 
-            bot.OnMessage += (_, message) =>
+            Bot.OnMessage += (_, message) =>
             {
-                if (message.Author != bot.User)
+                if (message.Author != Bot.User)
                 {
                     OnMessage(message);
                 }
@@ -67,10 +102,28 @@ namespace GrabbotPrime.Component
 
             try
             {
-                var command = Core.RecogniseCommand(initialMessage.Content);
+                string commandContent;
+
+                if (initialMessage.Channel.IsDm)
+                {
+                    commandContent = initialMessage.Content;
+                }
+                else
+                {
+                    var match = Regex.Match(initialMessage.Content, CommandRegex);
+
+                    if (!match.Success)
+                    {
+                        return;
+                    }
+
+                    commandContent = match.Groups[1].Value;
+                }
+
+                var command = Core.RecogniseCommand(commandContent);
 
                 command.Run(
-                    initialMessage.Content,
+                    commandContent,
                     (response) =>
                     {
                         initialMessage.Channel.SendMessage(response);
@@ -78,23 +131,38 @@ namespace GrabbotPrime.Component
                     () =>
                     {
                         var tcs = new TaskCompletionSource<Message>();
+
                         EventHandler<Message> handler = (_, message) =>
                         {
-                            if (message.Author != bot.User)
+                            if (message.Author != Bot.User)
                             {
                                 tcs.SetResult(message);
                             }
                         };
-                        bot.OnMessage += handler;
+
+                        Bot.OnMessage += handler;
+
                         try
                         {
+                            Task.WhenAny(tcs.Task, Task.Delay((int)CommandTimeoutMilliseconds)).Wait();
+
+                            if (!tcs.Task.IsCompleted)
+                            {
+                                initialMessage.Channel.SendMessage("Timed out.");
+                                throw new TimeoutException();
+                            }
+
                             return tcs.Task.Result.Content;
                         }
                         finally
                         {
-                            bot.OnMessage -= handler;
+                            Bot.OnMessage -= handler;
                         }
                     });
+            }
+            catch (TimeoutException)
+            {
+                // intentionally empty
             }
             finally
             {

@@ -9,6 +9,7 @@ namespace GrabbotPrime.Commands
         {
             return new ICommand[]
             {
+                new Test(),
                 new GreenBottles(),
                 new CoinFlip(),
                 new PingPong(),

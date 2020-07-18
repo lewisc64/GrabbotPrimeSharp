@@ -12,7 +12,7 @@ namespace GrabbotPrime.Commands
 
         public override void Run(string message, Action<string> messageSendCallback, Func<string> waitForMessageCallback)
         {
-            var i = 100;
+            var i = 10;
 
             while (i > 0)
             {

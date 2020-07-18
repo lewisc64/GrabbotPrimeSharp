@@ -134,9 +134,15 @@ namespace GrabbotPrime
             lock (Components)
             {
                 Components.Clear();
-                foreach (var document in RemoteComponentsCollection.FindAsync(Builders<BsonDocument>.Filter.Exists("uuid")).Result.ToEnumerable())
+                foreach (var document in RemoteComponentsCollection.FindAsync(Builders<BsonDocument>.Filter.Empty).Result.ToEnumerable())
                 {
                     Type componentType = ComponentRegistry.GetComponentTypeFromName(document["type"].AsString);
+
+                    if (!document.Contains("uuid"))
+                    {
+                        document["uuid"] = Guid.NewGuid().ToString();
+                        RemoteComponentsCollection.ReplaceOne(Builders<BsonDocument>.Filter.Eq("_id", document["_id"]), document, new ReplaceOptions { IsUpsert = false });
+                    }
 
                     Components.Add((ComponentBase)Activator.CreateInstance(componentType, new object[] { RemoteComponentsCollection, document["uuid"].AsString }));
                     var component = Components.Last();

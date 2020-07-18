@@ -92,6 +92,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\Chat\CoinFlip.cs" />
+    <Compile Include="Commands\Test.cs" />
     <Compile Include="Commands\Chat\Unknown.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\Chat\PingPong.cs" />
