@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using GrabbotPrime.Device;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -8,15 +12,9 @@ namespace GrabbotPrime.Component
     {
         public static Type GetComponentTypeFromName(string name)
         {
-            switch (name)
-            {
-                case nameof(DiscordBot):
-                    return typeof(DiscordBot);
-                case nameof(ConsoleWindow):
-                    return typeof(ConsoleWindow);
-                default:
-                    throw new ArgumentException($"'{name}' is not a valid component.", nameof(name));
-            }
+            return Assembly.GetExecutingAssembly().GetTypes()
+                .Where(x => x.IsClass && !x.IsAbstract && typeof(IComponent).IsAssignableFrom(x))
+                .FirstOrDefault(x => x.Name == name) ?? throw new ArgumentException($"'{name}' is not a valid component.", nameof(name));
         }
     }
 
@@ -31,6 +29,11 @@ namespace GrabbotPrime.Component
         void Tick();
 
         void TickRare();
+    }
+
+    public interface IHasDevices : IComponent
+    {
+        IEnumerable<IDevice> GetDevices();
     }
 
     public abstract class ComponentBase : IComponent

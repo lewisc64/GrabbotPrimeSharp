@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GrabbotPrime", "GrabbotPrim
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Driscod", "..\..\Driscod\Driscod\Driscod\Driscod.csproj", "{12CF17C0-A6E7-4030-A221-6DB4565D59D9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Phew", "..\..\Phew\Phew\Phew\Phew.csproj", "{0B910E49-5E4A-4DF2-82CE-051FEEF865A0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{12CF17C0-A6E7-4030-A221-6DB4565D59D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{12CF17C0-A6E7-4030-A221-6DB4565D59D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{12CF17C0-A6E7-4030-A221-6DB4565D59D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B910E49-5E4A-4DF2-82CE-051FEEF865A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B910E49-5E4A-4DF2-82CE-051FEEF865A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B910E49-5E4A-4DF2-82CE-051FEEF865A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B910E49-5E4A-4DF2-82CE-051FEEF865A0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

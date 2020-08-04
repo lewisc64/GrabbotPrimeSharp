@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
 using System.Text.RegularExpressions;
+using GrabbotPrime.Component;
 
-namespace GrabbotPrime.Component
+namespace GrabbotPrime.Integrations.Discord
 {
     class DiscordBot : ComponentBase
     {

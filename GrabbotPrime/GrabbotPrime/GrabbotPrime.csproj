@@ -92,6 +92,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\Chat\CoinFlip.cs" />
+    <Compile Include="Commands\Discovery\DeviceDiscovery.cs" />
+    <Compile Include="Commands\Lighting\LightCommandBase.cs" />
+    <Compile Include="Commands\Lighting\LightState.cs" />
     <Compile Include="Commands\Test.cs" />
     <Compile Include="Commands\Chat\Unknown.cs" />
     <Compile Include="Commands\Command.cs" />
@@ -99,8 +102,12 @@
     <Compile Include="Commands\Chat\GreenBottles.cs" />
     <Compile Include="Component\Component.cs" />
     <Compile Include="Component\ConsoleWindow.cs" />
-    <Compile Include="Component\DiscordBot.cs" />
+    <Compile Include="Integrations\Discord\Components\DiscordBot.cs" />
+    <Compile Include="Integrations\PhilipsHue\Components\HueBridge.cs" />
     <Compile Include="Core.cs" />
+    <Compile Include="Device\Device.cs" />
+    <Compile Include="Device\Light\ILight.cs" />
+    <Compile Include="Integrations\PhilipsHue\Devices\HueLight.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -113,6 +120,13 @@
       <Project>{12CF17C0-A6E7-4030-A221-6DB4565D59D9}</Project>
       <Name>Driscod</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\Phew\Phew\Phew\Phew.csproj">
+      <Project>{0B910E49-5E4A-4DF2-82CE-051FEEF865A0}</Project>
+      <Name>Phew</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Commands\Discovery\Hue\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\MongoDB.Libmongocrypt.1.0.0\build\MongoDB.Libmongocrypt.targets" Condition="Exists('..\packages\MongoDB.Libmongocrypt.1.0.0\build\MongoDB.Libmongocrypt.targets')" />

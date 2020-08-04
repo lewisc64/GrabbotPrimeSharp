@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GrabbotPrime.Commands.Lighting;
+using System;
 using System.Collections.Generic;
 
 namespace GrabbotPrime.Commands
@@ -9,10 +10,15 @@ namespace GrabbotPrime.Commands
         {
             return new ICommand[]
             {
-                new Test(),
+                new Discovery(),
+
+                new LightState(),
+
                 new GreenBottles(),
                 new CoinFlip(),
                 new PingPong(),
+
+                new Test(),
                 new Unknown(),
             };
         }

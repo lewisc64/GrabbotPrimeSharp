@@ -75,7 +75,7 @@ namespace GrabbotPrime
             }
         }
 
-        public T CreateComponent<T>(string uuid = null)
+        public T CreateComponent<T>(string uuid = null, Action<T> preInitialization = null)
             where T : IComponent
         {
             if (uuid == null)
@@ -86,13 +86,15 @@ namespace GrabbotPrime
             {
                 Components.Add((T)Activator.CreateInstance(typeof(T), new object[] { RemoteComponentsCollection, uuid }));
             }
-            Components.Last().Core = this;
-            if (Running)
-            {
-                Components.Last().Init();
-            }
 
             var component = (T)Components.Last();
+            component.Core = this;
+
+            if (Running)
+            {
+                preInitialization?.Invoke(component);
+                component.Init();
+            }
 
             Logger.Info($"Created component '{component}'.");
 

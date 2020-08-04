@@ -1,6 +1,8 @@
 ﻿using GrabbotPrime.Component;
+using GrabbotPrime.Integrations.Discord;
 using MongoDB.Driver;
 using NLog;
+using System.Linq;
 
 namespace GrabbotPrime
 {
