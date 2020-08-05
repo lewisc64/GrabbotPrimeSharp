@@ -13,6 +13,7 @@ namespace GrabbotPrime.Commands
                 new Discovery(),
 
                 new LightState(),
+                new LightList(),
 
                 new GreenBottles(),
                 new CoinFlip(),

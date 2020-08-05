@@ -94,6 +94,7 @@
     <Compile Include="Commands\Chat\CoinFlip.cs" />
     <Compile Include="Commands\Discovery.cs" />
     <Compile Include="Commands\Lighting\LightCommandBase.cs" />
+    <Compile Include="Commands\Lighting\LightList.cs" />
     <Compile Include="Commands\Lighting\LightState.cs" />
     <Compile Include="Commands\Test.cs" />
     <Compile Include="Commands\Chat\Unknown.cs" />
