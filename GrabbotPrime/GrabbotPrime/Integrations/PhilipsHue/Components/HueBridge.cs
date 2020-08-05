@@ -9,7 +9,7 @@ using Phew;
 
 namespace GrabbotPrime.Integrations.PhilipsHue
 {
-    class HueBridge : ComponentBase, IHasDevices
+    public partial class HueBridge : ComponentBase, IHasDevices
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 

@@ -12,9 +12,14 @@ namespace GrabbotPrime.Component
     {
         public static Type GetComponentTypeFromName(string name)
         {
-            return Assembly.GetExecutingAssembly().GetTypes()
-                .Where(x => x.IsClass && !x.IsAbstract && typeof(IComponent).IsAssignableFrom(x))
+            return GetComponentTypes()
                 .FirstOrDefault(x => x.Name == name) ?? throw new ArgumentException($"'{name}' is not a valid component.", nameof(name));
+        }
+
+        public static IEnumerable<Type> GetComponentTypes()
+        {
+            return Assembly.GetExecutingAssembly().GetTypes()
+                .Where(x => x.IsClass && !x.IsAbstract && typeof(IComponent).IsAssignableFrom(x));
         }
     }
 
