@@ -2,7 +2,7 @@
 
 namespace GrabbotPrime.Commands
 {
-    class Unknown : CommandBase
+    internal class Unknown : CommandBase
     {
         public override bool Recognise(string message)
         {

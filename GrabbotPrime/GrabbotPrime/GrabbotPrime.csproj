@@ -106,7 +106,7 @@
     <Compile Include="Integrations\Discord\Components\DiscordBot.cs" />
     <Compile Include="Integrations\PhilipsHue\Components\HueBridge.cs" />
     <Compile Include="Core.cs" />
-    <Compile Include="Device\Device.cs" />
+    <Compile Include="Device\IDevice.cs" />
     <Compile Include="Device\Light\ILight.cs" />
     <Compile Include="Integrations\PhilipsHue\Components\HueBridge.Discovery.cs" />
     <Compile Include="Integrations\PhilipsHue\Devices\HueLight.cs" />

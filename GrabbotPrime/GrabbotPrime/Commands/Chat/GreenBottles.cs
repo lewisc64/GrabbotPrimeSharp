@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace GrabbotPrime.Commands
 {
-    class GreenBottles : CommandBase
+    public class GreenBottles : CommandBase
     {
         public override bool Recognise(string message)
         {

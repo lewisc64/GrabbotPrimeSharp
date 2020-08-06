@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace GrabbotPrime.Component
 {
-    class ConsoleWindow : ComponentBase
+    public class ConsoleWindow : ComponentBase
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 

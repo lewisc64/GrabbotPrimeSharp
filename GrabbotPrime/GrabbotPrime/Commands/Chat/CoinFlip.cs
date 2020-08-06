@@ -2,7 +2,7 @@
 
 namespace GrabbotPrime.Commands
 {
-    class CoinFlip : CommandBase
+    public class CoinFlip : CommandBase
     {
         private static Random Random = new Random();
 

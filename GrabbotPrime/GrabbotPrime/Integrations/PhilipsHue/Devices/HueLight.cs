@@ -3,7 +3,7 @@ using Phew;
 
 namespace GrabbotPrime.Integrations.PhilipsHue.Devices
 {
-    class HueLight : ILight
+    public class HueLight : ILight
     {
         private Light InternalLight { get; set; }
 

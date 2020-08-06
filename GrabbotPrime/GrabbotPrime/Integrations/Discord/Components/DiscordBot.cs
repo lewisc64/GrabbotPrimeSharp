@@ -10,7 +10,7 @@ using GrabbotPrime.Component;
 
 namespace GrabbotPrime.Integrations.Discord
 {
-    class DiscordBot : ComponentBase
+    public class DiscordBot : ComponentBase
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 

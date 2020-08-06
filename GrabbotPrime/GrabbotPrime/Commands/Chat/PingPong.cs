@@ -2,7 +2,7 @@
 
 namespace GrabbotPrime.Commands
 {
-    class PingPong : CommandBase
+    public class PingPong : CommandBase
     {
         public override bool Recognise(string message)
         {

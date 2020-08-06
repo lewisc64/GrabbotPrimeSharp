@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace GrabbotPrime.Commands
 {
-    class Discovery : CommandBase
+    public class Discovery : CommandBase
     {
         public const string StaticMethodName = "Discover";
 
