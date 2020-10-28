@@ -2,8 +2,6 @@
 {
     public interface ILight : IDevice
     {
-        string Name { get; set; }
-
         bool On { get; set; }
 
         double Hue { get; set; } // degrees

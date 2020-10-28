@@ -1,10 +1,9 @@
-﻿using GrabbotPrime.Component;
-using GrabbotPrime.Device;
+﻿using GrabbotPrime.Device;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GrabbotPrime.Commands.Lighting
+namespace GrabbotPrime.Commands.Devices.Lighting
 {
     public abstract class LightCommandBase : CommandBase
     {
@@ -14,9 +13,7 @@ namespace GrabbotPrime.Commands.Lighting
 
         protected IEnumerable<ILight> GetLights()
         {
-            return Core.GetComponents<IHasDevices>()
-                .Select(x => x.GetDevices())
-                .Aggregate(new List<IDevice>(), (acc, devices) => { acc.AddRange(devices); return acc; })
+            return Core.GetDevices()
                 .Where(x => x is ILight)
                 .Cast<ILight>();
         }

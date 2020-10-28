@@ -6,6 +6,7 @@ using System.Linq;
 using System;
 using System.Threading;
 using GrabbotPrime.Commands;
+using GrabbotPrime.Device;
 
 namespace GrabbotPrime
 {
@@ -128,6 +129,13 @@ namespace GrabbotPrime
             where T : IComponent
         {
             return Components.Where(x => x is T).Cast<T>();
+        }
+
+        public IEnumerable<IDevice> GetDevices()
+        {
+            return GetComponents<IHasDevices>()
+                .Select(x => x.GetDevices())
+                .Aggregate(new List<IDevice>(), (acc, devices) => { acc.AddRange(devices); return acc; });
         }
 
         public void LoadComponents()

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace GrabbotPrime.Commands.Lighting
+namespace GrabbotPrime.Commands.Devices.Lighting
 {
     public class LightList : LightCommandBase
     {

@@ -1,4 +1,5 @@
-﻿using GrabbotPrime.Commands.Lighting;
+﻿using GrabbotPrime.Commands.Devices;
+using GrabbotPrime.Commands.Devices.Lighting;
 using System;
 using System.Collections.Generic;
 
@@ -12,6 +13,7 @@ namespace GrabbotPrime.Commands
             {
                 new Discovery(),
 
+                new RenameDevice(),
                 new LightState(),
                 new LightList(),
 

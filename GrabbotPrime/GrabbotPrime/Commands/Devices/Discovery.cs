@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 
-namespace GrabbotPrime.Commands
+namespace GrabbotPrime.Commands.Devices
 {
     public class Discovery : CommandBase
     {

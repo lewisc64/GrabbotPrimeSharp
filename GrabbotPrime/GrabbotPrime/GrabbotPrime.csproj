@@ -69,6 +69,7 @@
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL" />
     <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
@@ -92,10 +93,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\Chat\CoinFlip.cs" />
-    <Compile Include="Commands\Discovery.cs" />
-    <Compile Include="Commands\Lighting\LightCommandBase.cs" />
-    <Compile Include="Commands\Lighting\LightList.cs" />
-    <Compile Include="Commands\Lighting\LightState.cs" />
+    <Compile Include="Commands\Devices\RenameDevice.cs" />
+    <Compile Include="Commands\Devices\Discovery.cs" />
+    <Compile Include="Commands\Devices\Lighting\LightCommandBase.cs" />
+    <Compile Include="Commands\Devices\Lighting\LightList.cs" />
+    <Compile Include="Commands\Devices\Lighting\LightState.cs" />
     <Compile Include="Commands\Test.cs" />
     <Compile Include="Commands\Chat\Unknown.cs" />
     <Compile Include="Commands\Command.cs" />
