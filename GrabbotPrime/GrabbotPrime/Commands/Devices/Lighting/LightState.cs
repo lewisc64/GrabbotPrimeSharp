@@ -40,7 +40,7 @@ namespace GrabbotPrime.Commands.Devices.Lighting
 
             if (!lights.Any())
             {
-                messageSendCallback($"Couldn't find a light named '{name}'.");
+                messageSendCallback(string.IsNullOrEmpty(name) ? "I do not know of any lights." : $"Couldn't find a light named '{name}'.");
                 return;
             }
 
