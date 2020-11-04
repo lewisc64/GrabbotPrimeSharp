@@ -2,6 +2,7 @@
 using MongoDB.Driver;
 using Driscod;
 using Driscod.DiscordObjects;
+using Driscod.Gateway;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
@@ -80,6 +81,8 @@ namespace GrabbotPrime.Integrations.Discord
                 return;
             }
 
+            Gateway.DetailedLogging = true;
+
             Bot = new Bot(Token);
             Bot.Start();
 
@@ -90,6 +93,8 @@ namespace GrabbotPrime.Integrations.Discord
                     OnMessage(message);
                 }
             };
+
+            Logger.Info($"Started '{Bot.User.Username}#{Bot.User.Discriminator}'.");
         }
 
         private void OnMessage(Message initialMessage)

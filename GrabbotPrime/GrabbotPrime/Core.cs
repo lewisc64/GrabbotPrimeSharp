@@ -171,10 +171,12 @@ namespace GrabbotPrime
 
         public ICommand RecogniseCommand(string command)
         {
+            Logger.Debug($"Recieved command '{command}'.");
             foreach (var commandInstance in Commands)
             {
                 if (commandInstance.Recognise(command))
                 {
+                    Logger.Debug($"Recognised as '{commandInstance.GetType().Name}'");
                     return commandInstance;
                 }
             }
