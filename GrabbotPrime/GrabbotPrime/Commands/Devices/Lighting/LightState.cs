@@ -1,27 +1,31 @@
-﻿using GrabbotPrime.Device;
+﻿using GrabbotPrime.Commands.Context;
+using GrabbotPrime.Device;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace GrabbotPrime.Commands.Devices.Lighting
 {
     public class LightState : LightCommandBase
     {
-        private static Regex _regex = new Regex("^(?:(?:turn|set) (?:the )?(?<light>.+)|lights)(?: to)? (?<state>.+)$");
+        private static Regex _regex = new Regex("^(?:(?:turn|set) (?:the )?(?<light>(?:light|.+)+?)|lights)(?: to)? (?<state>.+)$", RegexOptions.IgnoreCase);
+
+        private static Random _random = new Random();
 
         public override bool Recognise(string message)
         {
             return _regex.IsMatch(message);
         }
 
-        public override void Run(string message, Action<string> messageSendCallback, Func<string> waitForMessageCallback)
+        public override async Task Run(string message, ICommandContext context)
         {
             var match = _regex.Match(message);
 
             var name = match.Groups["light"].Value;
-            var state = match.Groups["state"].Value;
+            var state = match.Groups["state"].Value.ToLower();
 
             var lights = new List<ILight>();
 
@@ -31,7 +35,7 @@ namespace GrabbotPrime.Commands.Devices.Lighting
             }
             else
             {
-                var light = SelectLight(name, messageSendCallback, waitForMessageCallback);
+                var light = SelectLight(name, context);
                 if (light != null)
                 {
                     lights.Add(light);
@@ -40,21 +44,45 @@ namespace GrabbotPrime.Commands.Devices.Lighting
 
             if (!lights.Any())
             {
-                messageSendCallback(string.IsNullOrEmpty(name) ? "I do not know of any lights." : $"Couldn't find a light named '{name}'.");
+                await context.SendMessage(string.IsNullOrEmpty(name) ? "I do not know of any lights." : $"Couldn't find a light named '{name}'.");
                 return;
             }
 
             foreach (var light in lights)
             {
-                light.On = state != "off";
-
-                if (state != "on" && state != "off")
+                if (state == "on" || state == "off")
                 {
-                    var color = Color.FromName(state);
+                    light.On = state != "off";
+                }
+                else if (state == "rainbow")
+                {
+                    light.On = true;
+                    light.Saturation = 100;
+                    light.Brightness = 100;
+                    light.CyclingColors = true;
+                }
+                else
+                {
+                    Color color;
+                    if (state.Contains("random"))
+                    {
+                        color = Color.FromArgb(_random.Next(0, 255), _random.Next(0, 255), _random.Next(0, 255));
+                    }
+                    else
+                    {
+                        color = Color.FromName(state);
+                        if (color.A == 0)
+                        {
+                            await context.SendMessage("I don't know that colour.");
+                            break;
+                        }
+                    }
+                    light.CyclingColors = false;
                     light.Hue = color.GetHue();
                     light.Saturation = color.GetSaturation() * 100;
                     light.Brightness = 100;
                 }
+                await context.SendMessage("Done.");
             }
         }
     }

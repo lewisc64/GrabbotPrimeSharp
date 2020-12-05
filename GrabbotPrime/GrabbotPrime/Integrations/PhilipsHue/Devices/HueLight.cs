@@ -33,6 +33,18 @@ namespace GrabbotPrime.Integrations.PhilipsHue.Devices
             }
         }
 
+        public bool CyclingColors
+        {
+            get
+            {
+                return InternalLight.Effect == "colorloop";
+            }
+            set
+            {
+                InternalLight.Effect = value ? "colorloop" : "none";
+            }
+        }
+
         public double Hue
         {
             get

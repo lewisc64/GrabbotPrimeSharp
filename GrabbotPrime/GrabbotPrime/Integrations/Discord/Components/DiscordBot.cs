@@ -1,17 +1,17 @@
-﻿using MongoDB.Bson;
-using MongoDB.Driver;
-using Driscod;
-using Driscod.DiscordObjects;
-using Driscod.Gateway;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System;
-using System.Text.RegularExpressions;
+﻿using Driscod.Gateway;
+using Driscod.Tracking;
+using Driscod.Tracking.Objects;
 using GrabbotPrime.Component;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
-namespace GrabbotPrime.Integrations.Discord
+namespace GrabbotPrime.Integrations.Discord.Components
 {
-    public class DiscordBot : ComponentBase
+    public class DiscordBot : ComponentBase, IHasOutputCapability
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -83,21 +83,21 @@ namespace GrabbotPrime.Integrations.Discord
 
             Gateway.DetailedLogging = true;
 
-            Bot = new Bot(Token);
+            Bot = new Bot(Token, Intents.All);
             Bot.Start();
 
-            Bot.OnMessage += (_, message) =>
+            Bot.OnMessage += async (_, message) =>
             {
                 if (message.Author != Bot.User)
                 {
-                    OnMessage(message);
+                    await OnMessage(message);
                 }
             };
 
             Logger.Info($"Started '{Bot.User.Username}#{Bot.User.Discriminator}'.");
         }
 
-        private void OnMessage(Message initialMessage)
+        private async Task OnMessage(Message initialMessage)
         {
             if (_handledChannels.Contains(initialMessage.Channel))
             {
@@ -127,44 +127,7 @@ namespace GrabbotPrime.Integrations.Discord
                 }
 
                 var command = Core.RecogniseCommand(commandContent);
-
-                command.Run(
-                    commandContent,
-                    (response) =>
-                    {
-                        initialMessage.Channel.SendMessage(response);
-                    },
-                    () =>
-                    {
-                        var tcs = new TaskCompletionSource<Message>();
-
-                        EventHandler<Message> handler = (_, message) =>
-                        {
-                            if (message.Author != Bot.User)
-                            {
-                                tcs.SetResult(message);
-                            }
-                        };
-
-                        Bot.OnMessage += handler;
-
-                        try
-                        {
-                            Task.WhenAny(tcs.Task, Task.Delay((int)CommandTimeoutMilliseconds)).Wait();
-
-                            if (!tcs.Task.IsCompleted)
-                            {
-                                initialMessage.Channel.SendMessage("Timed out.");
-                                throw new TimeoutException();
-                            }
-
-                            return tcs.Task.Result.Content;
-                        }
-                        finally
-                        {
-                            Bot.OnMessage -= handler;
-                        }
-                    });
+                await command.Run(commandContent, new DiscordCommandContext(initialMessage.Channel, TimeSpan.FromMilliseconds(CommandTimeoutMilliseconds.Value)));
             }
             catch (TimeoutException)
             {

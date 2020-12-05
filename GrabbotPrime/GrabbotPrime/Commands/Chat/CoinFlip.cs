@@ -1,19 +1,31 @@
-﻿using System;
+﻿using GrabbotPrime.Commands.Context;
+using System;
+using System.Threading.Tasks;
 
-namespace GrabbotPrime.Commands
+namespace GrabbotPrime.Commands.Chat
 {
     public class CoinFlip : CommandBase
     {
-        private static Random Random = new Random();
+        private static readonly Random Random = new Random();
 
         public override bool Recognise(string message)
         {
-            return message == "flip a coin";
+            return message.ToLower() == "flip a coin";
         }
 
-        public override void Run(string message, Action<string> messageSendCallback, Func<string> waitForMessageCallback)
+        public override async Task Run(string message, ICommandContext context)
         {
-            messageSendCallback(Random.Next() % 2 == 0 ? "Heads." : "Tails.");
+            await Flip(context);
+        }
+
+        private async Task Flip(ICommandContext context)
+        {
+            await context.SendMessage(Random.Next() % 2 == 0 ? "Heads." : "Tails.");
+
+            Core.AddContextualCommand(new BasicContextual("again", async context =>
+            {
+                await Flip(context);
+            }));
         }
     }
 }

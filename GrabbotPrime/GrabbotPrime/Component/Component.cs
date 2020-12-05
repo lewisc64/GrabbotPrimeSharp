@@ -1,10 +1,10 @@
-﻿using System;
+﻿using GrabbotPrime.Device;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using GrabbotPrime.Device;
-using MongoDB.Bson;
-using MongoDB.Driver;
 
 namespace GrabbotPrime.Component
 {
@@ -39,6 +39,10 @@ namespace GrabbotPrime.Component
     public interface IHasDevices : IComponent
     {
         IEnumerable<IDevice> GetDevices();
+    }
+
+    public interface IHasOutputCapability : IComponent
+    {
     }
 
     public abstract class ComponentBase : IComponent

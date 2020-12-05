@@ -1,6 +1,6 @@
-﻿using GrabbotPrime.Commands.Devices;
+﻿using GrabbotPrime.Commands.Chat;
+using GrabbotPrime.Commands.Devices;
 using GrabbotPrime.Commands.Devices.Lighting;
-using System;
 using System.Collections.Generic;
 
 namespace GrabbotPrime.Commands
@@ -11,6 +11,7 @@ namespace GrabbotPrime.Commands
         {
             return new ICommand[]
             {
+                new Multiple(),
                 new Discovery(),
 
                 new RenameDevice(),
@@ -20,28 +21,11 @@ namespace GrabbotPrime.Commands
                 new GreenBottles(),
                 new CoinFlip(),
                 new PingPong(),
+                new Echo(),
 
                 new Test(),
                 new Unknown(),
             };
         }
-    }
-    
-    public interface ICommand
-    {
-        Core Core { get; set; }
-
-        bool Recognise(string message);
-
-        void Run(string message, Action<string> messageSendCallback, Func<string> waitForMessageCallback);
-    }
-
-    public abstract class CommandBase : ICommand
-    {
-        public Core Core { get; set; }
-
-        public abstract bool Recognise(string message);
-
-        public abstract void Run(string message, Action<string> messageSendCallback, Func<string> waitForMessageCallback);
     }
 }

@@ -1,7 +1,8 @@
-﻿using GrabbotPrime.Device;
-using System;
+﻿using GrabbotPrime.Commands.Context;
+using GrabbotPrime.Device;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace GrabbotPrime.Commands.Devices.Lighting
 {
@@ -9,7 +10,7 @@ namespace GrabbotPrime.Commands.Devices.Lighting
     {
         public abstract override bool Recognise(string message);
 
-        public abstract override void Run(string message, Action<string> messageSendCallback, Func<string> waitForMessageCallback);
+        public abstract override Task Run(string message, ICommandContext context);
 
         protected IEnumerable<ILight> GetLights()
         {
@@ -18,22 +19,22 @@ namespace GrabbotPrime.Commands.Devices.Lighting
                 .Cast<ILight>();
         }
 
-        protected ILight SelectLight(string input, Action<string> messageSendCallback, Func<string> waitForMessageCallback)
+        protected ILight SelectLight(string input, ICommandContext context)
         {
             var lights = GetLights();
 
             foreach (var light in lights)
             {
-                if (light.Name == input)
+                if (light.Name.ToLower() == input.ToLower())
                 {
                     return light;
                 }
             }
 
             // TODO: scores that are exactly the same.
-            return lights.Where(x => CreateSimilarityScore(x.Name, input) > 0).Aggregate(null, (ILight acc, ILight light) =>
+            return lights.Where(x => CreateSimilarityScore(x.Name.ToLower(), input.ToLower()) > 0).Aggregate(null, (ILight acc, ILight light) =>
             {
-                if (acc == null || CreateSimilarityScore(acc.Name, input) < CreateSimilarityScore(light.Name, input))
+                if (acc == null || CreateSimilarityScore(acc.Name.ToLower(), input.ToLower()) < CreateSimilarityScore(light.Name.ToLower(), input.ToLower()))
                 {
                     return light;
                 }

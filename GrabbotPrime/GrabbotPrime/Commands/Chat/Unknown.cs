@@ -1,6 +1,7 @@
-﻿using System;
+﻿using GrabbotPrime.Commands.Context;
+using System.Threading.Tasks;
 
-namespace GrabbotPrime.Commands
+namespace GrabbotPrime.Commands.Chat
 {
     internal class Unknown : CommandBase
     {
@@ -9,9 +10,9 @@ namespace GrabbotPrime.Commands
             return true;
         }
 
-        public override void Run(string message, Action<string> messageSendCallback, Func<string> waitForMessageCallback)
+        public override async Task Run(string message, ICommandContext context)
         {
-            messageSendCallback("Unknown command.");
+            await context.SendMessage("Unknown command.");
         }
     }
 }

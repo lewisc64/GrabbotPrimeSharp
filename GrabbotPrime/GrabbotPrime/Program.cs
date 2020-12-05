@@ -1,5 +1,4 @@
-﻿using GrabbotPrime.Component;
-using GrabbotPrime.Integrations.Discord;
+﻿using GrabbotPrime.Integrations.Discord.Components;
 using MongoDB.Driver;
 using NLog;
 
@@ -16,7 +15,6 @@ namespace GrabbotPrime
             var Core = new Core(new MongoClient($"mongodb://localhost/"));
 
             Core.CreateComponentIfNotExists<DiscordBot>();
-            Core.CreateComponentIfNotExists<ConsoleWindow>();
 
             Core.Start();
         }

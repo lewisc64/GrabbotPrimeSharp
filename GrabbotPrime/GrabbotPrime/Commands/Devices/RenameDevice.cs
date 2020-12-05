@@ -1,5 +1,7 @@
-﻿using System;
+﻿using GrabbotPrime.Commands.Context;
+using System;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace GrabbotPrime.Commands.Devices
 {
@@ -12,7 +14,7 @@ namespace GrabbotPrime.Commands.Devices
             return _regex.IsMatch(message);
         }
 
-        public override void Run(string message, Action<string> messageSendCallback, Func<string> waitForMessageCallback)
+        public override async Task Run(string message, ICommandContext context)
         {
             var match = _regex.Match(message);
             var oldName = match.Groups["old"].Value;
@@ -25,16 +27,16 @@ namespace GrabbotPrime.Commands.Devices
                     try
                     {
                         device.Name = newName;
-                        messageSendCallback($"Successfully renamed '{oldName}' to '{newName}'.");
+                        await context.SendMessage($"Successfully renamed '{oldName}' to '{newName}'.");
                     }
                     catch (InvalidOperationException)
                     {
-                        messageSendCallback($"Cannot rename device '{oldName}'.");
+                        await context.SendMessage($"Cannot rename device '{oldName}'.");
                     }
                     return;
                 }
             }
-            messageSendCallback($"Could not find a device called '{oldName}'.");
+            await context.SendMessage($"Could not find a device called '{oldName}'.");
         }
     }
 }

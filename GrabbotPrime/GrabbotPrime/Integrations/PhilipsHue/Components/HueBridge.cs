@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using GrabbotPrime.Component;
+﻿using GrabbotPrime.Component;
 using GrabbotPrime.Device;
 using GrabbotPrime.Integrations.PhilipsHue.Devices;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Phew;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace GrabbotPrime.Integrations.PhilipsHue
 {

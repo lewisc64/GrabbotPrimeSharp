@@ -1,5 +1,6 @@
-﻿using System;
+﻿using GrabbotPrime.Commands.Context;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace GrabbotPrime.Commands.Devices.Lighting
 {
@@ -10,16 +11,16 @@ namespace GrabbotPrime.Commands.Devices.Lighting
             return (message.Contains("what") || message.Contains("list")) && message.Contains("lights");
         }
 
-        public override void Run(string message, Action<string> messageSendCallback, Func<string> waitForMessageCallback)
+        public override async Task Run(string message, ICommandContext context)
         {
             var lights = GetLights();
             if (lights.Any())
             {
-                messageSendCallback($"I know of {lights.Count()} lights:\n - {string.Join("\n - ", lights.Select(x => x.Name))}");
+                await context.SendMessage($"I know of {lights.Count()} lights:\n - {string.Join("\n - ", lights.Select(x => x.Name))}");
             }
             else
             {
-                messageSendCallback("I don't know of any lights. Try discovering some devices.");
+                await context.SendMessage("I don't know of any lights. Try discovering some devices.");
             }
         }
     }

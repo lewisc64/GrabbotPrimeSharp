@@ -1,17 +1,18 @@
-﻿using System;
+﻿using GrabbotPrime.Commands.Context;
+using System.Threading.Tasks;
 
-namespace GrabbotPrime.Commands
+namespace GrabbotPrime.Commands.Chat
 {
     public class PingPong : CommandBase
     {
         public override bool Recognise(string message)
         {
-            return message == "ping";
+            return message.ToLower() == "ping";
         }
 
-        public override void Run(string message, Action<string> messageSendCallback, Func<string> waitForMessageCallback)
+        public override async Task Run(string message, ICommandContext context)
         {
-            messageSendCallback("pong");
+            await context.SendMessage("Pong.");
         }
     }
 }

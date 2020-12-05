@@ -1,29 +1,30 @@
-﻿using System;
+﻿using GrabbotPrime.Commands.Context;
 using System.Threading;
+using System.Threading.Tasks;
 
-namespace GrabbotPrime.Commands
+namespace GrabbotPrime.Commands.Chat
 {
     public class GreenBottles : CommandBase
     {
         public override bool Recognise(string message)
         {
-            return message == "do the green bottle song";
+            return message.ToLower() == "do the green bottle song";
         }
 
-        public override void Run(string message, Action<string> messageSendCallback, Func<string> waitForMessageCallback)
+        public override async Task Run(string message, ICommandContext context)
         {
             var i = 10;
 
             while (i > 0)
             {
-                messageSendCallback($"{GetSubject(i)} hanging on the wall.");
+                await context.SendMessage($"{GetSubject(i)} hanging on the wall.");
                 Thread.Sleep(2000);
-                messageSendCallback($"{GetSubject(i)} hanging on the wall!");
+                await context.SendMessage($"{GetSubject(i)} hanging on the wall!");
                 Thread.Sleep(2200);
-                messageSendCallback("And if 1 green bottle were to accidentally fall...");
+                await context.SendMessage("And if 1 green bottle were to accidentally fall...");
                 Thread.Sleep(2200);
                 i -= 1;
-                messageSendCallback($"There'll be {GetSubject(i)} hanging on the wall.");
+                await context.SendMessage($"There'll be {GetSubject(i)} hanging on the wall.");
                 Thread.Sleep(2500);
             }
         }

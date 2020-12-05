@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GrabbotPrime.Commands.Context;
+using System.Threading.Tasks;
 
 namespace GrabbotPrime.Commands
 {
@@ -9,10 +10,12 @@ namespace GrabbotPrime.Commands
             return message == "test";
         }
 
-        public override void Run(string message, Action<string> messageSendCallback, Func<string> waitForMessageCallback)
+        public override async Task Run(string message, ICommandContext context)
         {
-            var name = waitForMessageCallback();
-            messageSendCallback(name);
+            while (true)
+            {
+                await context.SendMessage("nerd");
+            }
         }
     }
 }

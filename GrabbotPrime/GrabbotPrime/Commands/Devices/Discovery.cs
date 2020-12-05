@@ -1,10 +1,12 @@
-﻿using GrabbotPrime.Component;
+﻿using GrabbotPrime.Commands.Context;
+using GrabbotPrime.Component;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace GrabbotPrime.Commands.Devices
 {
@@ -17,9 +19,9 @@ namespace GrabbotPrime.Commands.Devices
             return message == "discover devices";
         }
 
-        public override void Run(string message, Action<string> messageSendCallback, Func<string> waitForMessageCallback)
+        public override async Task Run(string message, ICommandContext context)
         {
-            messageSendCallback("Discovering devices... Please wait 1 minute.");
+            await context.SendMessage("Discovering devices... Please wait 1 minute.");
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -40,7 +42,7 @@ namespace GrabbotPrime.Commands.Devices
 
             stopwatch.Stop();
 
-            messageSendCallback($"Done. Discovered {discoveredComponents.Count} new devices.");
+            await context.SendMessage($"Done. Discovered {discoveredComponents.Count} new devices.");
         }
 
         private IEnumerable<MethodInfo> GetDiscoveryMethods()

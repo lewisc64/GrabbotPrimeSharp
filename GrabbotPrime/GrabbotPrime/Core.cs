@@ -1,12 +1,12 @@
-﻿using GrabbotPrime.Component;
-using System.Collections.Generic;
-using MongoDB.Driver;
-using MongoDB.Bson;
-using System.Linq;
-using System;
-using System.Threading;
-using GrabbotPrime.Commands;
+﻿using GrabbotPrime.Commands;
+using GrabbotPrime.Component;
 using GrabbotPrime.Device;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 
 namespace GrabbotPrime
 {
@@ -34,6 +34,8 @@ namespace GrabbotPrime
         public bool Running { get; private set; } = false;
 
         private List<IComponent> Components { get; set; } = new List<IComponent>();
+
+        private Queue<ICommand> ContextualCommands { get; set; } = new Queue<ICommand>();
 
         private IEnumerable<ICommand> Commands { get; set; } = CommandsRegistry.GetCommands();
 
@@ -169,17 +171,42 @@ namespace GrabbotPrime
             }
         }
 
+        public void AddContextualCommand(ICommand command)
+        {
+            if (!(command is IContextualCommand))
+            {
+                throw new ArgumentException("Command is not contextual.", nameof(command));
+            }
+
+            ContextualCommands.Enqueue(command);
+        }
+
         public ICommand RecogniseCommand(string command)
         {
-            Logger.Debug($"Recieved command '{command}'.");
+            try
+            {
+                while (ContextualCommands.Any())
+                {
+                    var commandInstance = ContextualCommands.Dequeue();
+                    if (commandInstance.Recognise(command))
+                    {
+                        return commandInstance;
+                    }
+                }
+            }
+            finally
+            {
+                ContextualCommands.Clear();
+            }
+
             foreach (var commandInstance in Commands)
             {
                 if (commandInstance.Recognise(command))
                 {
-                    Logger.Debug($"Recognised as '{commandInstance.GetType().Name}'");
                     return commandInstance;
                 }
             }
+
             throw new ArgumentException("Command does not have a match.", nameof(command));
         }
     }
