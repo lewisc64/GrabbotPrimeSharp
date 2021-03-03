@@ -77,6 +77,7 @@ namespace GrabbotPrime.Commands.Devices.Lighting
                             break;
                         }
                     }
+                    light.On = true;
                     light.CyclingColors = false;
                     light.Hue = color.GetHue();
                     light.Saturation = color.GetSaturation() * 100;
