@@ -1,4 +1,6 @@
 ﻿using GrabbotPrime.Integrations.Discord.Components;
+using GrabbotPrime.Integrations.Spotify.Components;
+using GrabbotPrime.Integrations.Youtube.Components;
 using MongoDB.Driver;
 using NLog;
 
@@ -15,6 +17,8 @@ namespace GrabbotPrime
             var Core = new Core(new MongoClient($"mongodb://localhost/"));
 
             Core.CreateComponentIfNotExists<DiscordBot>();
+            Core.CreateComponentIfNotExists<SpotifyConnector>();
+            Core.CreateComponentIfNotExists<YoutubeConnector>();
 
             Core.Start();
         }

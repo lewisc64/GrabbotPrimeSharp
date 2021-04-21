@@ -1,10 +1,12 @@
-﻿using GrabbotPrime.Device;
+﻿using GrabbotPrime.Commands.Audio.Source;
+using GrabbotPrime.Device;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace GrabbotPrime.Component
 {
@@ -43,6 +45,17 @@ namespace GrabbotPrime.Component
 
     public interface IHasOutputCapability : IComponent
     {
+    }
+
+    public interface IHasAudioSearchCapability : IComponent
+    {
+        int? Priority { get; set; }
+
+        string ServiceIdentifier { get; set;  }
+
+        Task<IAudioStreamSource> SearchForSong(string query);
+
+        IAsyncEnumerable<IAudioStreamSource> SearchForSongs(string query);
     }
 
     public abstract class ComponentBase : IComponent

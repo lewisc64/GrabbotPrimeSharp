@@ -1,6 +1,9 @@
-﻿using Driscod.Tracking.Objects;
+﻿using Driscod.Audio;
+using Driscod.Tracking.Objects;
+using GrabbotPrime.Commands.Audio.Source;
 using GrabbotPrime.Commands.Context;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace GrabbotPrime.Integrations.Discord.Components
@@ -9,12 +12,39 @@ namespace GrabbotPrime.Integrations.Discord.Components
     {
         private Channel _channel;
 
+        private User _user;
+
         private TimeSpan _timeout;
 
-        public DiscordCommandContext(Channel channel, TimeSpan timeout)
+        public DiscordCommandContext(Channel channel, User user, TimeSpan timeout)
         {
             _channel = channel;
+            _user = user;
             _timeout = timeout;
+        }
+
+        public async Task<bool> PlayAudio(IAudioStreamSource source)
+        {
+            if (_channel.IsDm)
+            {
+                throw new NotSupportedException();
+            }
+
+            var voiceChannel = _channel.Guild.VoiceStates.FirstOrDefault(x => x.User == _user)?.Channel;
+
+            if (voiceChannel == null)
+            {
+                throw new NotSupportedException();
+            }
+
+            voiceChannel.Guild.VoiceConnection?.Disconnect();
+
+            using (var connection = voiceChannel.ConnectVoice())
+            {
+                await connection.PlayAudio(new AudioFile(source.StreamUrl));
+            }
+
+            return true;
         }
 
         public Task SendMessage(string message)

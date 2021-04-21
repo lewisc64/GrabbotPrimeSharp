@@ -1,4 +1,5 @@
-﻿using GrabbotPrime.Commands.Chat;
+﻿using GrabbotPrime.Commands.Audio;
+using GrabbotPrime.Commands.Chat;
 using GrabbotPrime.Commands.Devices;
 using GrabbotPrime.Commands.Devices.Lighting;
 using System.Collections.Generic;
@@ -17,6 +18,8 @@ namespace GrabbotPrime.Commands
                 new RenameDevice(),
                 new LightState(),
                 new LightList(),
+
+                new PlaySong(),
 
                 new GreenBottles(),
                 new CoinFlip(),

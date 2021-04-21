@@ -1,11 +1,14 @@
-﻿using Driscod.Gateway;
+﻿using Driscod.Audio;
+using Driscod.Gateway;
 using Driscod.Tracking;
 using Driscod.Tracking.Objects;
+using Driscod.Tracking.Voice;
 using GrabbotPrime.Component;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -127,7 +130,7 @@ namespace GrabbotPrime.Integrations.Discord.Components
                 }
 
                 var command = Core.RecogniseCommand(commandContent);
-                await command.Run(commandContent, new DiscordCommandContext(initialMessage.Channel, TimeSpan.FromMilliseconds(CommandTimeoutMilliseconds.Value)));
+                await command.Run(commandContent, new DiscordCommandContext(initialMessage.Channel, initialMessage.Author, TimeSpan.FromMilliseconds(CommandTimeoutMilliseconds.Value)));
             }
             catch (TimeoutException)
             {
