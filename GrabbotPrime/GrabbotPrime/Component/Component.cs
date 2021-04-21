@@ -53,7 +53,7 @@ namespace GrabbotPrime.Component
 
         string ServiceIdentifier { get; set;  }
 
-        Task<IAudioStreamSource> SearchForSong(string query);
+        IAsyncEnumerable<IAudioStreamSource> SearchForSong(string query);
 
         IAsyncEnumerable<IAudioStreamSource> SearchForSongs(string query);
     }

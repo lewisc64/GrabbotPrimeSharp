@@ -1,6 +1,7 @@
 ﻿using Driscod.Extensions;
 using GrabbotPrime.Commands.Context;
 using GrabbotPrime.Component;
+using GrabbotPrime.Component.SongQueue;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -10,7 +11,7 @@ namespace GrabbotPrime.Commands.Audio
 {
     public class PlaySong : CommandBase
     {
-        private static Regex _regex = new Regex("^(?:play) (?<name>.+?)(?: (?:on|from) (?<service>.+))?$", RegexOptions.IgnoreCase);
+        private static Regex _regex = new Regex("(?:(?:play(?:ing)?|add)(?: me(?: the)?)?) (?<name>.+?)(?: (?:on|from|using) (?<service>.+))?(?<next> next|afterwards|after this|to(?: the)? queue)?$", RegexOptions.IgnoreCase);
 
         public override bool Recognise(string message)
         {
@@ -30,27 +31,41 @@ namespace GrabbotPrime.Commands.Audio
 
             var service = services.First();
 
-            var source = await service.SearchForSong(name);
+            var sources = service.SearchForSong(name);
 
-            if (source == null)
+            var firstSource = true;
+
+            await foreach (var source in sources)
             {
-                await context.SendMessage($"Unable to find song on {service.ServiceIdentifier}");
-                return;
+
+                var queue = Core.GetComponents<SongQueue>()
+                    .Single();
+
+                var player = context.GetSongPlayerForSource(source);
+
+                var songText = $"'{source.Name}'";
+                if (source.Artist != null)
+                {
+                    songText += $" by {source.Artist}";
+                }
+
+                if (!firstSource || match.Groups["next"].Success)
+                {
+                    queue.Enqueue(player);
+                    await context.SendMessage($"Added {songText} to the queue.");
+                }
+                else
+                {
+                    queue.PlayNow(player);
+                    await context.SendMessage($"Playing {songText}.");
+                }
+                firstSource = false;
             }
 
-            if (source.Artist != null)
+            if (firstSource)
             {
-                await context.SendMessage($"Playing '{source.Name}' by {source.Artist}...");
+                await context.SendMessage($"Unable to find song on {service.ServiceIdentifier}.");
             }
-            else
-            {
-                await context.SendMessage($"Playing '{source.Name}'...");
-            }
-
-            Task.Run(async () =>
-            {
-                await context.PlayAudio(source);
-            }).Forget();
         }
     }
 }

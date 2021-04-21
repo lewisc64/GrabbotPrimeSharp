@@ -2,8 +2,10 @@
 using Driscod.Tracking.Objects;
 using GrabbotPrime.Commands.Audio.Source;
 using GrabbotPrime.Commands.Context;
+using GrabbotPrime.Component.SongQueue;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrabbotPrime.Integrations.Discord.Components
@@ -23,28 +25,9 @@ namespace GrabbotPrime.Integrations.Discord.Components
             _timeout = timeout;
         }
 
-        public async Task<bool> PlayAudio(IAudioStreamSource source)
+        public ISingleSongPlayer GetSongPlayerForSource(IAudioStreamSource source)
         {
-            if (_channel.IsDm)
-            {
-                throw new NotSupportedException();
-            }
-
-            var voiceChannel = _channel.Guild.VoiceStates.FirstOrDefault(x => x.User == _user)?.Channel;
-
-            if (voiceChannel == null)
-            {
-                throw new NotSupportedException();
-            }
-
-            voiceChannel.Guild.VoiceConnection?.Disconnect();
-
-            using (var connection = voiceChannel.ConnectVoice())
-            {
-                await connection.PlayAudio(new AudioFile(source.StreamUrl));
-            }
-
-            return true;
+            return new DiscordAudioPlayer(_channel, _user, source);
         }
 
         public Task SendMessage(string message)

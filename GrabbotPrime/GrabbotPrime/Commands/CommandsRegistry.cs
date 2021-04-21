@@ -19,12 +19,14 @@ namespace GrabbotPrime.Commands
                 new LightState(),
                 new LightList(),
 
-                new PlaySong(),
-
                 new GreenBottles(),
                 new CoinFlip(),
                 new PingPong(),
                 new Echo(),
+
+                new PlaySong(),
+                new StopSong(),
+                new SkipSong(),
 
                 new Test(),
                 new Unknown(),

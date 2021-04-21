@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using YoutubeExplode;
+using YoutubeExplode.Search;
 
 namespace GrabbotPrime.Integrations.Youtube.Components
 {
@@ -73,16 +74,29 @@ namespace GrabbotPrime.Integrations.Youtube.Components
             }
         }
 
-        public async Task<IAudioStreamSource> SearchForSong(string query)
+        public async IAsyncEnumerable<IAudioStreamSource> SearchForSong(string query)
         {
-            await foreach (var video in Client.Search.GetVideosAsync(query))
+            await foreach (var result in Client.Search.GetResultsAsync(query))
             {
-                return new Mp3WebStreamSource(await GetAudioStreamUrl(video.Id))
+                if (result is PlaylistSearchResult)
                 {
-                    Name = video.Title,
-                };
+                    await foreach (var video in Client.Playlists.GetVideosAsync(((PlaylistSearchResult)result).Id))
+                    {
+                        yield return new Mp3WebStreamSource(await GetAudioStreamUrl(video.Id))
+                        {
+                            Name = video.Title,
+                        };
+                    }
+                }
+                else if (result is VideoSearchResult)
+                {
+                    yield return new Mp3WebStreamSource(await GetAudioStreamUrl(((VideoSearchResult)result).Id))
+                    {
+                        Name = result.Title,
+                    };
+                }
+                break;
             }
-            return null;
         }
 
         public async IAsyncEnumerable<IAudioStreamSource> SearchForSongs(string query)

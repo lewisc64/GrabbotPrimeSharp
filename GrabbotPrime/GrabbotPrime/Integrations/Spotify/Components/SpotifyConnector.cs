@@ -82,20 +82,19 @@ namespace GrabbotPrime.Integrations.Spotify.Components
             }
         }
 
-        public async Task<IAudioStreamSource> SearchForSong(string query)
+        public async IAsyncEnumerable<IAudioStreamSource> SearchForSong(string query)
         {
             var search = await Client.Search.Item(new SearchRequest(SearchRequest.Types.All, query));
 
             await foreach (var item in Client.Paginate(search.Tracks, s => s.Tracks))
             {
-                return new Mp3WebStreamSource(item.PreviewUrl)
+                yield return new Mp3WebStreamSource(item.PreviewUrl)
                 {
                     Name = item.Name,
                     Artist = item.Artists.First().Name,
                 };
+                break;
             }
-
-            return null;
         }
 
         public async IAsyncEnumerable<IAudioStreamSource> SearchForSongs(string query)

@@ -68,13 +68,15 @@ namespace GrabbotPrime
 
         public void TickLoop()
         {
+            var timer = new Driscod.Audio.DriftTimer(TimeSpan.FromMilliseconds(20));
+
             while (Running)
             {
                 foreach (var component in Components)
                 {
                     component.Tick();
                 }
-                Thread.Sleep(20);
+                timer.Wait().Wait();
             }
         }
 

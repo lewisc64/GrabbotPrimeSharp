@@ -1,4 +1,5 @@
 ﻿using GrabbotPrime.Commands.Audio.Source;
+using GrabbotPrime.Component.SongQueue;
 using System.Threading.Tasks;
 
 namespace GrabbotPrime.Commands.Context
@@ -9,6 +10,6 @@ namespace GrabbotPrime.Commands.Context
 
         Task<string> WaitForMessage();
 
-        Task<bool> PlayAudio(IAudioStreamSource source);
+        ISingleSongPlayer GetSongPlayerForSource(IAudioStreamSource source);
     }
 }
