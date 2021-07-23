@@ -13,7 +13,7 @@ namespace GrabbotPrime.Integrations.Base.Commands.Audio
 
         public override bool Recognise(string message)
         {
-            return _regex.IsMatch(message);
+            return Core.GetComponents<SongQueue>().Single().IsPlaying && _regex.IsMatch(message);
         }
 
         public override async Task Run(string message, ICommandContext context)

@@ -1,4 +1,5 @@
-﻿using GrabbotPrime.Component;
+﻿using GrabbotPrime.Command.Audio.Source;
+using GrabbotPrime.Component;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Collections.Generic;
@@ -19,6 +20,12 @@ namespace GrabbotPrime.Integrations.Base.Components
         private ISingleSongPlayer ActivePlayer { get; set; }
 
         private CancellationTokenSource AudioCancellationTokenSource { get; set; } = new CancellationTokenSource();
+
+        public bool IsPlaying => Queue.Any();
+
+        public IAudioStreamSource CurrentlyPlaying => Queue.FirstOrDefault()?.Source;
+
+        public IAudioStreamSource NextUp => Queue.Skip(1).FirstOrDefault()?.Source;
 
         public SongQueue(IMongoCollection<BsonDocument> collection, string uuid = null)
             : base(collection, uuid: uuid)

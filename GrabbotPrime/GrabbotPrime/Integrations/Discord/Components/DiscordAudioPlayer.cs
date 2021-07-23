@@ -15,13 +15,14 @@ namespace GrabbotPrime.Integrations.Discord.Components
 
         private User _user;
 
-        private IAudioStreamSource _source;
+        public IAudioStreamSource Source { get; private set; }
 
         public DiscordAudioPlayer(Channel channel, User user, IAudioStreamSource source)
         {
             _channel = channel;
             _user = user;
-            _source = source;
+
+            Source = source;
         }
 
         public async Task Play(CancellationToken cancellationToken, Action donePlayingCallback = null)
@@ -44,7 +45,7 @@ namespace GrabbotPrime.Integrations.Discord.Components
 
                 using (var connection = voiceChannel.ConnectVoice())
                 {
-                    await connection.PlayAudio(new AudioFile(_source.StreamUrl), cancellationToken: cancellationToken);
+                    await connection.PlayAudio(new AudioFile(Source.StreamUrl), cancellationToken: cancellationToken);
                 }
             }
             finally

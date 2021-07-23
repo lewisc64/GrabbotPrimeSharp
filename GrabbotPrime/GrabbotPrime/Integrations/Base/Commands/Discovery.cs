@@ -24,8 +24,7 @@ namespace GrabbotPrime.Integrations.Base.Commands.Devices
         {
             await context.SendMessage("Discovering devices... Please wait 1 minute.");
 
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
+            var stopwatch = Stopwatch.StartNew();
 
             var discoveryMethods = GetDiscoveryMethods();
 
