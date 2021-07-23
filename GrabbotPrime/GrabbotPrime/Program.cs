@@ -19,7 +19,7 @@ namespace GrabbotPrime
 
             Core.CreateComponentIfNotExists<SongQueue>();
 
-            Core.CreateComponentIfNotExists<DiscordBot>();
+            Core.CreateComponentIfNotExists<Speech>();
             Core.CreateComponentIfNotExists<SpotifyConnector>();
             Core.CreateComponentIfNotExists<YoutubeConnector>();
 

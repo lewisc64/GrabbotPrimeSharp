@@ -31,7 +31,7 @@ namespace GrabbotPrime.Integrations.PhilipsHue
                     continue;
                 }
 
-                yield return core.CreateComponent<HueBridge>(preInitialization: (component) =>
+                yield return core.CreateComponent<HueBridge>(preInitialization: component =>
                 {
                     component.BridgeId = bridge.Id;
                     component.Username = bridge.Username;

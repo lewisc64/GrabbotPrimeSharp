@@ -1,4 +1,4 @@
-﻿using GrabbotPrime.Commands;
+﻿using GrabbotPrime.Command;
 using GrabbotPrime.Component;
 using GrabbotPrime.Device;
 using MongoDB.Bson;
@@ -37,7 +37,7 @@ namespace GrabbotPrime
 
         private Queue<ICommand> ContextualCommands { get; set; } = new Queue<ICommand>();
 
-        private IEnumerable<ICommand> Commands { get; set; } = CommandsRegistry.GetCommands();
+        private IEnumerable<ICommand> Commands { get; set; } = CommandsRegistry.GetCommands().ToList();
 
         private IMongoDatabase Database => _mongoClient.GetDatabase(DatabaseName);
 

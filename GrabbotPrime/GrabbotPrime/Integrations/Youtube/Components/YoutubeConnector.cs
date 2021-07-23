@@ -1,4 +1,4 @@
-﻿using GrabbotPrime.Commands.Audio.Source;
+﻿using GrabbotPrime.Command.Audio.Source;
 using GrabbotPrime.Component;
 using MongoDB.Bson;
 using MongoDB.Driver;

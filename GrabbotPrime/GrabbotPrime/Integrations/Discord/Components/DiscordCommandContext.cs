@@ -1,11 +1,8 @@
-﻿using Driscod.Audio;
-using Driscod.Tracking.Objects;
-using GrabbotPrime.Commands.Audio.Source;
-using GrabbotPrime.Commands.Context;
+﻿using Driscod.Tracking.Objects;
+using GrabbotPrime.Command.Audio.Source;
+using GrabbotPrime.Command.Context;
 using GrabbotPrime.Component.SongQueue;
 using System;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace GrabbotPrime.Integrations.Discord.Components

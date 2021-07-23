@@ -1,4 +1,4 @@
-﻿using GrabbotPrime.Commands.Audio.Source;
+﻿using GrabbotPrime.Command.Audio.Source;
 using GrabbotPrime.Component;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -6,7 +6,6 @@ using SpotifyAPI.Web;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace GrabbotPrime.Integrations.Spotify.Components
 {

@@ -1,4 +1,4 @@
-﻿using GrabbotPrime.Commands.Audio.Source;
+﻿using GrabbotPrime.Command.Audio.Source;
 using GrabbotPrime.Device;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace GrabbotPrime.Component
 {
@@ -51,7 +50,7 @@ namespace GrabbotPrime.Component
     {
         int? Priority { get; set; }
 
-        string ServiceIdentifier { get; set;  }
+        string ServiceIdentifier { get; set; }
 
         IAsyncEnumerable<IAudioStreamSource> SearchForSong(string query);
 

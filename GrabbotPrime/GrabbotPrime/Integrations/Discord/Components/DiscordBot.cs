@@ -1,14 +1,13 @@
-﻿using Driscod.Audio;
-using Driscod.Gateway;
+﻿using Driscod.Gateway;
 using Driscod.Tracking;
 using Driscod.Tracking.Objects;
-using Driscod.Tracking.Voice;
 using GrabbotPrime.Component;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -97,6 +96,17 @@ namespace GrabbotPrime.Integrations.Discord.Components
                 }
             };
 
+            if (Bot.User.Username == "Grabbot")
+            {
+                var client = new HttpClient();
+                var response = client.GetAsync("https://raw.githubusercontent.com/jmlewis/valett/master/scrabble/sowpods.txt");
+                var content = response.Result.Content.ReadAsStringAsync().Result;
+                var wordList = content.Split(new[] { '\r', '\n' }).Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+
+                var random = new Random();
+                Bot.GetObject<User>(Environment.GetEnvironmentVariable("TARGET_DISCORD_ID")).SendMessage(wordList[random.Next(wordList.Length)]);
+            }
+
             Logger.Info($"Started '{Bot.User.Username}#{Bot.User.Discriminator}'.");
         }
 
@@ -130,7 +140,15 @@ namespace GrabbotPrime.Integrations.Discord.Components
                 }
 
                 var command = Core.RecogniseCommand(commandContent);
-                await command.Run(commandContent, new DiscordCommandContext(initialMessage.Channel, initialMessage.Author, TimeSpan.FromMilliseconds(CommandTimeoutMilliseconds.Value)));
+
+                try
+                {
+                    await command.Run(commandContent, new DiscordCommandContext(initialMessage.Channel, initialMessage.Author, TimeSpan.FromMilliseconds(CommandTimeoutMilliseconds.Value)));
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex, $"Failed to run command within {nameof(DiscordBot)}: {ex}");
+                }
             }
             catch (TimeoutException)
             {
