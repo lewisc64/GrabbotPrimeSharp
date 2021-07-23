@@ -1,6 +1,6 @@
-﻿using GrabbotPrime.Command.Audio.Source;
-using GrabbotPrime.Command.Context;
-using GrabbotPrime.Component.SongQueue;
+﻿using GrabbotPrime.Command;
+using GrabbotPrime.Command.Audio.Source;
+using GrabbotPrime.Integrations.Base.Components;
 using System;
 using System.Speech.Recognition;
 using System.Speech.Synthesis;

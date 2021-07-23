@@ -1,11 +1,12 @@
-﻿using MongoDB.Bson;
+﻿using GrabbotPrime.Component;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GrabbotPrime.Component.SongQueue
+namespace GrabbotPrime.Integrations.Base.Components
 {
     public class SongQueue : ComponentBase
     {

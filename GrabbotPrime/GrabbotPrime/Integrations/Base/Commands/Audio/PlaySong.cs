@@ -1,7 +1,6 @@
 ﻿using GrabbotPrime.Command;
-using GrabbotPrime.Command.Context;
 using GrabbotPrime.Component;
-using GrabbotPrime.Component.SongQueue;
+using GrabbotPrime.Integrations.Base.Components;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;

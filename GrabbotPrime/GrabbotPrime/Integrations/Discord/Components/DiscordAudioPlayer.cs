@@ -1,7 +1,7 @@
 ﻿using Driscod.Audio;
 using Driscod.Tracking.Objects;
 using GrabbotPrime.Command.Audio.Source;
-using GrabbotPrime.Component.SongQueue;
+using GrabbotPrime.Integrations.Base.Components;
 using System;
 using System.Linq;
 using System.Threading;

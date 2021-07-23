@@ -1,4 +1,4 @@
-﻿using GrabbotPrime.Component.SongQueue;
+﻿using GrabbotPrime.Integrations.Base.Components;
 using GrabbotPrime.Integrations.Discord.Components;
 using GrabbotPrime.Integrations.Spotify.Components;
 using GrabbotPrime.Integrations.Youtube.Components;

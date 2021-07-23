@@ -1,5 +1,4 @@
-﻿using GrabbotPrime.Command.Context;
-using System;
+﻿using System;
 using System.Threading.Tasks;
 
 namespace GrabbotPrime.Command

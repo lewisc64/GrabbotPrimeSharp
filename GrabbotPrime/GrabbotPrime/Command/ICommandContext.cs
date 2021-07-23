@@ -1,8 +1,8 @@
 ﻿using GrabbotPrime.Command.Audio.Source;
-using GrabbotPrime.Component.SongQueue;
+using GrabbotPrime.Integrations.Base.Components;
 using System.Threading.Tasks;
 
-namespace GrabbotPrime.Command.Context
+namespace GrabbotPrime.Command
 {
     public interface ICommandContext
     {

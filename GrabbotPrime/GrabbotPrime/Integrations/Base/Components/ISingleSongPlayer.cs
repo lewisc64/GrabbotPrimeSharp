@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GrabbotPrime.Component.SongQueue
+namespace GrabbotPrime.Integrations.Base.Components
 {
     public interface ISingleSongPlayer
     {
