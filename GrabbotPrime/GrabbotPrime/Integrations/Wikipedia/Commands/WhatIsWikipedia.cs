@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace GrabbotPrime.Integrations.Wikipedia.Commands
 {
-    [ActiveCommand]
+    [ActiveCommand(-10)]
     public class WhatIsWikipedia : CommandBase
     {
         private static Regex _regex = new Regex("^(?:what|who|where)(?: is)? (?<subject>.+)$", RegexOptions.IgnoreCase);
