@@ -19,7 +19,7 @@ namespace GrabbotPrime.Integrations.Discord.Components
 
         private static readonly HashSet<Channel> _handledChannels = new HashSet<Channel>();
 
-        private string Token
+        public string Token
         {
             get
             {
@@ -31,7 +31,7 @@ namespace GrabbotPrime.Integrations.Discord.Components
             }
         }
 
-        private string CommandRegex
+        public string CommandRegex
         {
             get
             {
@@ -43,7 +43,7 @@ namespace GrabbotPrime.Integrations.Discord.Components
             }
         }
 
-        private int? CommandTimeoutMilliseconds
+        public int? CommandTimeoutMilliseconds
         {
             get
             {

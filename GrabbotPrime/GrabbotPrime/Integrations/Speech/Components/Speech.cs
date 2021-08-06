@@ -13,9 +13,9 @@ namespace GrabbotPrime.Integrations.Discord.Components
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
-        SpeechRecognitionEngine WakeWordEngine { get; set; }
+        public SpeechSynthesizer Synth { get; set; }
 
-        SpeechSynthesizer Synth { get; set; }
+        private SpeechRecognitionEngine WakeWordEngine { get; set; }
 
         public Speech(IMongoCollection<BsonDocument> collection, string uuid = null)
             : base(collection, uuid: uuid)
