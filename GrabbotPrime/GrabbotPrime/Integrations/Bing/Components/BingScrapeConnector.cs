@@ -3,6 +3,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 
@@ -40,6 +41,19 @@ namespace GrabbotPrime.Integrations.Bing.Components
             }
         }
 
+        public bool? DisableSafeSearch
+        {
+            get
+            {
+                return GetPropertyByName("disable_safe_search")?.AsBoolean;
+            }
+
+            set
+            {
+                SetPropertyByName("disable_safe_search", value);
+            }
+        }
+
         public BingScrapeConnector(IMongoCollection<BsonDocument> collection, string uuid = null)
             : base(collection, uuid: uuid)
         {
@@ -58,11 +72,28 @@ namespace GrabbotPrime.Integrations.Bing.Components
             {
                 ServiceIdentifier = "bing";
             }
+
+            if (!DisableSafeSearch.HasValue)
+            {
+                DisableSafeSearch = false;
+            }
         }
 
         public async IAsyncEnumerable<string> SearchForImageUrls(string query)
         {
-            var client = new HttpClient();
+            var cookieContainer = new CookieContainer();
+
+            if (DisableSafeSearch.Value)
+            {
+                cookieContainer.Add(new Cookie("SRCHHPGUSR", "ADLT=OFF", null, "bing.com"));
+            }
+
+            var handler = new HttpClientHandler
+            {
+                CookieContainer = cookieContainer,
+            };
+
+            var client = new HttpClient(handler);
 
             var pageContent = await (await client.GetAsync($"https://www.bing.com/images/search?q={query.Trim().Replace(" ", "+")}&form=HDRSC2")).Content.ReadAsStringAsync();
 
