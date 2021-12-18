@@ -1,4 +1,5 @@
 ﻿using GrabbotPrime.Command;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,6 +15,8 @@ namespace GrabbotPrime.Integrations.Base.Commands.Chat
 
         public override async Task Run(string message, ICommandContext context)
         {
+            var random = new Random();
+
             var i = 999;
 
             while (i > 0)
@@ -22,9 +25,14 @@ namespace GrabbotPrime.Integrations.Base.Commands.Chat
                 Thread.Sleep(2000);
                 await context.SendMessage($"{GetSubject(i)} hanging on the wall!");
                 Thread.Sleep(2200);
-                await context.SendMessage("And if 1 green bottle were to accidentally fall...");
+
+                var fallingBottles = random.Next(1, Math.Min(500, i));
+
+                await context.SendMessage($"And if {GetSubject(fallingBottles)} were to accidentally fall...");
                 Thread.Sleep(2200);
-                i -= 1;
+
+                i -= fallingBottles;
+
                 await context.SendMessage($"There'll be {GetSubject(i)} hanging on the wall.");
                 Thread.Sleep(2500);
             }

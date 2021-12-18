@@ -30,11 +30,18 @@ namespace GrabbotPrime.Integrations.Discord.Components
 
         public Task SendMessage(string message)
         {
+#pragma warning disable CA1416 // Validate platform compatibility
             _synth.Speak(message);
+#pragma warning restore CA1416 // Validate platform compatibility
             return Task.CompletedTask;
         }
 
-        public async Task<string> WaitForMessage()
+        public Task SendImage(string url, string caption = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string> WaitForMessage()
         {
             throw new NotImplementedException();
         }

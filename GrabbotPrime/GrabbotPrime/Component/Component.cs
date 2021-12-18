@@ -57,6 +57,15 @@ namespace GrabbotPrime.Component
         IAsyncEnumerable<IAudioStreamSource> SearchForSongs(string query);
     }
 
+    public interface IHasImageSearchCapability : IComponent
+    {
+        int? Priority { get; set; }
+
+        string ServiceIdentifier { get; set; }
+
+        IAsyncEnumerable<string> SearchForImageUrls(string query);
+    }
+
     public abstract class ComponentBase : IComponent
     {
         private readonly object _readWriteLock = new object();

@@ -8,6 +8,8 @@ namespace GrabbotPrime.Command
     {
         Task SendMessage(string message);
 
+        Task SendImage(string url, string caption = null);
+
         Task<string> WaitForMessage();
 
         ISingleSongPlayer GetSongPlayerForSource(IAudioStreamSource source);

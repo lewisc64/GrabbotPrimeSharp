@@ -33,6 +33,19 @@ namespace GrabbotPrime.Integrations.Discord.Components
             return Task.CompletedTask;
         }
 
+        public Task SendImage(string url, string caption = null)
+        {
+            _channel.SendMessage(new MessageEmbed
+            {
+                Title = caption,
+                Image = new MessageEmbed.ImageInfo
+                {
+                    Url = url,
+                },
+            });
+            return Task.CompletedTask;
+        }
+
         public async Task<string> WaitForMessage()
         {
             var tcs = new TaskCompletionSource<Message>();

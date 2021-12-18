@@ -1,5 +1,7 @@
 ﻿using GrabbotPrime.Integrations.Base.Components;
+using GrabbotPrime.Integrations.Bing.Components;
 using GrabbotPrime.Integrations.Discord.Components;
+using GrabbotPrime.Integrations.Imgur.Components;
 using GrabbotPrime.Integrations.Spotify.Components;
 using GrabbotPrime.Integrations.Youtube.Components;
 using MongoDB.Driver;
@@ -22,6 +24,8 @@ namespace GrabbotPrime
             Core.CreateComponentIfNotExists<Speech>();
             Core.CreateComponentIfNotExists<SpotifyConnector>();
             Core.CreateComponentIfNotExists<YoutubeConnector>();
+            Core.CreateComponentIfNotExists<ImgurConnector>();
+            Core.CreateComponentIfNotExists<BingScrapeConnector>();
 
             Core.Start();
         }
