@@ -105,7 +105,16 @@ namespace GrabbotPrime.Integrations.Bing.Components
 
             foreach (var url in urls)
             {
-                var headResponse = client.SendAsync(new HttpRequestMessage(HttpMethod.Head, url)).Result;
+                HttpResponseMessage headResponse;
+                try
+                {
+                    headResponse = client.SendAsync(new HttpRequestMessage(HttpMethod.Head, url)).Result;
+                }
+                catch
+                {
+                    Logger.Warn($"Skipping image URL, HEAD request threw: {url}");
+                    continue;
+                }
                 var contentType = headResponse.Content.Headers.ContentType;
                 if (contentType != null && contentType.MediaType.StartsWith("image/"))
                 {
