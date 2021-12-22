@@ -10,7 +10,7 @@ using YoutubeExplode.Search;
 
 namespace GrabbotPrime.Integrations.Youtube.Components
 {
-    public class YoutubeConnector : ComponentBase, IHasAudioSearchCapability
+    public class YoutubeConnector : ComponentBase, IIsAudioSearchService
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 

@@ -11,8 +11,6 @@ namespace GrabbotPrime.Integrations.Base.Commands.Chat
     [ActiveCommand]
     public class ShowImage : RegexCommandBase
     {
-        private static readonly Random Random = new Random();
-
         public ShowImage()
             : base(@"^(show(.+?(pictures?|images?)?( of( a| the)?)?)?|what does( a| the)?) (?<query>.+?)(look like)?\??$")
         {
@@ -22,19 +20,15 @@ namespace GrabbotPrime.Integrations.Base.Commands.Chat
         {
             var query = match.Groups["query"].Value.Trim();
 
-            var services = Core.GetComponents<IHasImageSearchCapability>()
+            var services = Core.GetComponents<IIsImageSearchService>()
                 .OrderByDescending(x => x.Priority);
             var service = services.First();
 
-            var urls = new List<string>();
-            await foreach (var url in service.SearchForImageUrls(query))
-            {
-                urls.Add(url);
-            }
+            var urls = service.SearchForRandomImageUrls(query);
 
             if (urls.Any())
             {
-                await SelectAndDisplayImage(context, query, urls);
+                await SelectAndDisplayImage(context, query, urls.GetEnumerator());
             }
             else
             {
@@ -42,19 +36,17 @@ namespace GrabbotPrime.Integrations.Base.Commands.Chat
             }
         }
 
-        private async Task SelectAndDisplayImage(ICommandContext context, string query, List<string> urls)
+        private async Task SelectAndDisplayImage(ICommandContext context, string query, IEnumerator<string> urlEnumerator)
         {
-            if (!urls.Any())
+            if (!urlEnumerator.MoveNext())
             {
                 await context.SendMessage("There are no more images.");
                 return;
             }
 
-            var url = urls.ElementAt(Random.Next(0, urls.Count()));
-            urls.Remove(url);
-            await context.SendImage(url, caption: query);
+            await context.SendImage(urlEnumerator.Current, caption: query);
 
-            Core.AddContextualCommand(new BasicContextual(new Regex("another|again|more"), async context => await SelectAndDisplayImage(context, query, urls)));
+            Core.AddContextualCommand(new BasicContextual(new Regex("another|again|more|different", RegexOptions.IgnoreCase), async context => await SelectAndDisplayImage(context, query, urlEnumerator)));
         }
     }
 }

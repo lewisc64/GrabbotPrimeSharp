@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace GrabbotPrime.Integrations.Spotify.Components
 {
-    public class SpotifyConnector : ComponentBase, IHasAudioSearchCapability
+    public class SpotifyConnector : ComponentBase, IIsAudioSearchService
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 

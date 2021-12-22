@@ -1,6 +1,7 @@
 ﻿using GrabbotPrime.Component;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -9,11 +10,9 @@ using System.Text.RegularExpressions;
 
 namespace GrabbotPrime.Integrations.Bing.Components
 {
-    public class BingScrapeConnector : ComponentBase, IHasImageSearchCapability
+    public class BingScrapeConnector : ComponentBase, IIsImageSearchService
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-
-        private static readonly string[] BadLinkParts = new[] { "preview.redd.it" };
 
         public int? Priority
         {
@@ -79,7 +78,7 @@ namespace GrabbotPrime.Integrations.Bing.Components
             }
         }
 
-        public async IAsyncEnumerable<string> SearchForImageUrls(string query)
+        public IEnumerable<string> SearchForRandomImageUrls(string query)
         {
             var cookieContainer = new CookieContainer();
 
@@ -95,16 +94,23 @@ namespace GrabbotPrime.Integrations.Bing.Components
 
             var client = new HttpClient(handler);
 
-            var pageContent = await (await client.GetAsync($"https://www.bing.com/images/search?q={query.Trim().Replace(" ", "+")}&form=HDRSC2")).Content.ReadAsStringAsync();
+            var pageContent = client.GetAsync($"https://www.bing.com/images/search?q={query.Trim().Replace(" ", "+")}&form=HDRSC2").Result.Content.ReadAsStringAsync().Result;
+
+            var random = new Random();
 
             var urls = Regex.Matches(pageContent, @"https[A-Za-z0-9.\/-_]+\.(png|jpg)")
                 .Cast<Match>()
                 .Select(x => x.Value)
-                .Where(x => !BadLinkParts.Any(y => x.Contains(y)));
+                .OrderBy(x => random.Next());
 
             foreach (var url in urls)
             {
-                yield return url;
+                var headResponse = client.SendAsync(new HttpRequestMessage(HttpMethod.Head, url)).Result;
+                var contentType = headResponse.Content.Headers.ContentType;
+                if (contentType != null && contentType.MediaType.StartsWith("image/"))
+                {
+                    yield return url;
+                }
             }
         }
     }

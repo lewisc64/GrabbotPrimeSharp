@@ -46,7 +46,11 @@ namespace GrabbotPrime.Component
     {
     }
 
-    public interface IHasAudioSearchCapability : IComponent
+    public interface IIsService : IComponent
+    {
+    }
+
+    public interface IIsAudioSearchService : IIsService
     {
         int? Priority { get; set; }
 
@@ -57,13 +61,13 @@ namespace GrabbotPrime.Component
         IAsyncEnumerable<IAudioStreamSource> SearchForSongs(string query);
     }
 
-    public interface IHasImageSearchCapability : IComponent
+    public interface IIsImageSearchService : IIsService
     {
         int? Priority { get; set; }
 
         string ServiceIdentifier { get; set; }
 
-        IAsyncEnumerable<string> SearchForImageUrls(string query);
+        IEnumerable<string> SearchForRandomImageUrls(string query);
     }
 
     public abstract class ComponentBase : IComponent

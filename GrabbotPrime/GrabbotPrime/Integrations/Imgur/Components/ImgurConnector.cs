@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace GrabbotPrime.Integrations.Imgur.Components
 {
-    public class ImgurConnector : ComponentBase, IHasImageSearchCapability
+    public class ImgurConnector : ComponentBase, IIsImageSearchService
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -89,9 +89,9 @@ namespace GrabbotPrime.Integrations.Imgur.Components
             }
         }
 
-        public async IAsyncEnumerable<string> SearchForImageUrls(string query)
+        public IEnumerable<string> SearchForRandomImageUrls(string query)
         {
-            foreach (var post in await Client.Search(query))
+            foreach (var post in Client.Search(query).Result)
             {
                 if (!post.IsAlbum)
                 {

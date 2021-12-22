@@ -23,7 +23,7 @@ namespace GrabbotPrime.Integrations.Base.Commands.Audio
             var name = match.Groups["name"].Value;
             var serviceName = match.Groups["service"].Value;
 
-            var services = Core.GetComponents<IHasAudioSearchCapability>()
+            var services = Core.GetComponents<IIsAudioSearchService>()
                 .OrderByDescending(x => x.Priority)
                 .OrderByDescending(x => serviceName.ToLower().Contains(x.ServiceIdentifier.ToLower()));
 
