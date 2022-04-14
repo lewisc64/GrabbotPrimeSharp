@@ -20,7 +20,9 @@ namespace GrabbotPrime.Integrations.Base.Commands.Audio
         {
             Core.GetComponents<SongQueue>()
                 .Single()
-                .Stop();
+                .StopPlaying();
+
+            await context.SendMessage("Stopped.");
         }
     }
 }

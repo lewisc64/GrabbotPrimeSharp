@@ -20,9 +20,7 @@ namespace GrabbotPrime
 
         private readonly IMongoClient _mongoClient;
 
-#pragma warning disable S1450 // Private fields only used as local variables in methods should become local variables
-        private Thread _tickThread;
-#pragma warning restore S1450 // Private fields only used as local variables in methods should become local variables
+        private readonly object _componentsLock = new object();
 
         public Core(IMongoClient mongoClient)
         {
@@ -53,7 +51,7 @@ namespace GrabbotPrime
 
             foreach (var component in Components)
             {
-                component.Init();
+                component.Start();
             }
 
             foreach (var command in Commands)
@@ -62,8 +60,8 @@ namespace GrabbotPrime
             }
 
             Running = true;
-            _tickThread = new Thread(TickLoop);
-            _tickThread.Start();
+            new Thread(TickLoop).Start();
+            new Thread(TickLoopRare).Start();
         }
 
         public void TickLoop()
@@ -74,22 +72,87 @@ namespace GrabbotPrime
             {
                 foreach (var component in Components)
                 {
-                    component.Tick();
+                    try
+                    {
+                        component.Tick();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error(ex, $"Component '{component}' threw an exception in the tick loop.");
+                    }
                 }
                 timer.Wait().Wait();
             }
         }
 
-        public T CreateComponent<T>(string uuid = null, Action<T> preInitialization = null)
+        public void TickLoopRare()
+        {
+            var timer = new Driscod.Audio.DriftTimer(TimeSpan.FromSeconds(60));
+
+            while (Running)
+            {
+                lock (_componentsLock)
+                {
+                    foreach (var component in Components)
+                    {
+                        try
+                        {
+                            component.TickRare();
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error(ex, $"Component '{component}' threw an exception in the rare tick loop.");
+                        }
+                    }
+                }
+
+                PruneComponents();
+
+                timer.Wait().Wait();
+            }
+        }
+
+        public void PruneComponents()
+        {
+            lock (_componentsLock)
+            {
+                var destroy = new List<IComponent>();
+                foreach (var component in Components)
+                {
+                    var filter = Builders<BsonDocument>.Filter.Eq("_id", component.Id);
+                    if (RemoteComponentsCollection.CountDocuments(filter) == 0)
+                    {
+                        destroy.Add(component);
+                        Logger.Warn($"Component '{component}' does not exist in the database.");
+                    }
+                }
+
+                foreach (var component in destroy)
+                {
+                    try
+                    {
+                        component.Stop();
+                        Components.Remove(component);
+                        Logger.Info($"Component '{component}' has been destroyed.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error(ex, $"Failed to destroy component '{component}'.");
+                    }
+                }
+            }
+        }
+
+        public T CreateComponent<T>(ObjectId? id = null, Action<T> preInitialization = null)
             where T : IComponent
         {
-            if (uuid == null)
+            if (id == null)
             {
                 Components.Add((T)Activator.CreateInstance(typeof(T), new object[] { RemoteComponentsCollection, null }));
             }
             else
             {
-                Components.Add((T)Activator.CreateInstance(typeof(T), new object[] { RemoteComponentsCollection, uuid }));
+                Components.Add((T)Activator.CreateInstance(typeof(T), new object[] { RemoteComponentsCollection, id }));
             }
 
             var component = (T)Components.Last();
@@ -98,7 +161,7 @@ namespace GrabbotPrime
             if (Running)
             {
                 preInitialization?.Invoke(component);
-                component.Init();
+                component.Start();
             }
 
             Logger.Info($"Created component '{component}'.");
@@ -106,10 +169,10 @@ namespace GrabbotPrime
             return component;
         }
 
-        public T CreateComponentIfNotExists<T>(string uuid = null)
+        public T CreateComponentIfNotExists<T>(ObjectId? id = null)
             where T : IComponent
         {
-            if (uuid == null)
+            if (id == null)
             {
                 var component = Components.FirstOrDefault(x => x.GetType() == typeof(T));
                 if (component != null)
@@ -119,14 +182,14 @@ namespace GrabbotPrime
             }
             else
             {
-                var component = Components.FirstOrDefault(x => x.Uuid == uuid);
+                var component = Components.FirstOrDefault(x => x.Id == id);
                 if (component != null)
                 {
                     return (T)component;
                 }
             }
 
-            return CreateComponent<T>(uuid);
+            return CreateComponent<T>(id);
         }
 
         public IEnumerable<T> GetComponents<T>()
@@ -145,20 +208,23 @@ namespace GrabbotPrime
         public void LoadComponents()
         {
             Logger.Info("Loading components from database...");
-            lock (Components)
+            lock (_componentsLock)
             {
                 Components.Clear();
                 foreach (var document in RemoteComponentsCollection.FindAsync(Builders<BsonDocument>.Filter.Empty).Result.ToEnumerable())
                 {
-                    Type componentType = ComponentRegistry.GetComponentTypeFromName(document["type"].AsString);
-
-                    if (!document.Contains("uuid"))
+                    Type componentType;
+                    try
                     {
-                        document["uuid"] = Guid.NewGuid().ToString();
-                        RemoteComponentsCollection.ReplaceOne(Builders<BsonDocument>.Filter.Eq("_id", document["_id"]), document, new ReplaceOptions { IsUpsert = false });
+                        componentType = ComponentRegistry.GetComponentTypeFromName(document["type"].AsString);
+                    }
+                    catch (ArgumentException)
+                    {
+                        Logger.Error($"Unknown component type in component collection: '{document["type"].AsString}'");
+                        continue;
                     }
 
-                    Components.Add((ComponentBase)Activator.CreateInstance(componentType, new object[] { RemoteComponentsCollection, document["uuid"].AsString }));
+                    Components.Add((ComponentBase)Activator.CreateInstance(componentType, new object[] { RemoteComponentsCollection, document["_id"].AsObjectId }));
                     var component = Components.Last();
 
                     component.Core = this;
@@ -167,7 +233,7 @@ namespace GrabbotPrime
 
                     if (Running)
                     {
-                        component.Init();
+                        component.Start();
                     }
                 }
             }

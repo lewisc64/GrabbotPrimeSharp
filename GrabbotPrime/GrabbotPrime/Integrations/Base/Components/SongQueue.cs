@@ -27,14 +27,14 @@ namespace GrabbotPrime.Integrations.Base.Components
 
         public IAudioStreamSource NextUp => Queue.Skip(1).FirstOrDefault()?.Source;
 
-        public SongQueue(IMongoCollection<BsonDocument> collection, string uuid = null)
-            : base(collection, uuid: uuid)
+        public SongQueue(IMongoCollection<BsonDocument> collection, ObjectId? id = null)
+            : base(collection, id: id)
         {
         }
 
-        public override void Init()
+        public override void Start()
         {
-            base.Init();
+            base.Start();
         }
 
         public override void Tick()
@@ -79,7 +79,7 @@ namespace GrabbotPrime.Integrations.Base.Components
 
         public void PlayNow(ISingleSongPlayer player)
         {
-            Stop();
+            StopPlaying();
             Enqueue(player);
         }
 
@@ -99,7 +99,7 @@ namespace GrabbotPrime.Integrations.Base.Components
             }
         }
 
-        public void Stop()
+        public void StopPlaying()
         {
             lock (_lock)
             {

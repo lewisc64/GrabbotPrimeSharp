@@ -21,6 +21,8 @@ namespace GrabbotPrime.Integrations.Base.Commands.Audio
             Core.GetComponents<SongQueue>()
                 .Single()
                 .Skip();
+
+            await context.SendMessage("Skipped.");
         }
     }
 }

@@ -62,14 +62,14 @@ namespace GrabbotPrime.Integrations.Imgur.Components
             }
         }
 
-        public ImgurConnector(IMongoCollection<BsonDocument> collection, string uuid = null)
-            : base(collection, uuid: uuid)
+        public ImgurConnector(IMongoCollection<BsonDocument> collection, ObjectId? id = null)
+            : base(collection, id: id)
         {
         }
 
-        public override void Init()
+        public override void Start()
         {
-            base.Init();
+            base.Start();
 
             if (ImgurClientId == null || ImgurClientId == "REPLACE_WITH_CLIENT_ID")
             {

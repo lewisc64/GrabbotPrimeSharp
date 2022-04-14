@@ -54,14 +54,14 @@ namespace GrabbotPrime.Integrations.Youtube.Components
             }
         }
 
-        public YoutubeConnector(IMongoCollection<BsonDocument> collection, string uuid = null)
-            : base(collection, uuid: uuid)
+        public YoutubeConnector(IMongoCollection<BsonDocument> collection, ObjectId? id = null)
+            : base(collection, id: id)
         {
         }
 
-        public override void Init()
+        public override void Start()
         {
-            base.Init();
+            base.Start();
 
             if (!Priority.HasValue)
             {

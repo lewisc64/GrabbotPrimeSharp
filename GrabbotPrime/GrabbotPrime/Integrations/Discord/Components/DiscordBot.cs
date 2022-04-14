@@ -57,14 +57,14 @@ namespace GrabbotPrime.Integrations.Discord.Components
 
         private Bot Bot { get; set; }
 
-        public DiscordBot(IMongoCollection<BsonDocument> collection, string uuid = null)
-            : base(collection, uuid: uuid)
+        public DiscordBot(IMongoCollection<BsonDocument> collection, ObjectId? id = null)
+            : base(collection, id: id)
         {
         }
 
-        public override void Init()
+        public override void Start()
         {
-            base.Init();
+            base.Start();
 
             if (CommandRegex == null)
             {
@@ -90,9 +90,16 @@ namespace GrabbotPrime.Integrations.Discord.Components
 
             Bot.OnMessage += async (_, message) =>
             {
-                if (message.Author != Bot.User)
+                try
                 {
-                    await OnMessage(message);
+                    if (message.Author != Bot.User)
+                    {
+                        await OnMessage(message);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex, $"Failed to handle message: '{message.Content}'");
                 }
             };
 
@@ -110,6 +117,12 @@ namespace GrabbotPrime.Integrations.Discord.Components
             Logger.Info($"Started '{Bot.User.Username}#{Bot.User.Discriminator}'.");
         }
 
+        public override void Stop()
+        {
+            base.Stop();
+            Bot.Stop();
+        }
+
         private async Task OnMessage(Message initialMessage)
         {
             if (_handledChannels.Contains(initialMessage.Channel))
@@ -122,6 +135,7 @@ namespace GrabbotPrime.Integrations.Discord.Components
             try
             {
                 string commandContent;
+                var channel = initialMessage.Channel;
 
                 if (initialMessage.Channel.IsDm)
                 {
@@ -139,11 +153,29 @@ namespace GrabbotPrime.Integrations.Discord.Components
                     commandContent = match.Groups[1].Value;
                 }
 
+                if (commandContent.Contains("->"))
+                {
+                    var split = commandContent.Split("->");
+
+                    commandContent = split.First();
+                    var target = Bot.GetObject<User>(split.Last().Trim());
+
+                    if (!target.IsBot)
+                    {
+                        channel = target.DmChannel;
+                    }
+                    else
+                    {
+                        channel.SendMessage("Cannot DM bot users.");
+                        return;
+                    }
+                }
+
                 var command = Core.RecogniseCommand(commandContent);
 
                 try
                 {
-                    await command.Run(commandContent, new DiscordCommandContext(initialMessage.Channel, initialMessage.Author, TimeSpan.FromMilliseconds(CommandTimeoutMilliseconds.Value)));
+                    await command.Run(commandContent, new DiscordCommandContext(channel, initialMessage.Author, TimeSpan.FromMilliseconds(CommandTimeoutMilliseconds.Value)));
                 }
                 catch (Exception ex)
                 {

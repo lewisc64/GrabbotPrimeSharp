@@ -28,9 +28,11 @@ namespace GrabbotPrime.Component
     {
         Core Core { get; set; }
 
-        string Uuid { get; }
+        ObjectId Id { get; }
 
-        void Init();
+        void Start();
+
+        void Stop();
 
         void Tick();
 
@@ -81,30 +83,33 @@ namespace GrabbotPrime.Component
             get
             {
                 var doc = _collection
-                    .FindAsync(Builders<BsonDocument>.Filter.Eq("uuid", Uuid)).Result
-                    .FirstOrDefault();
-
-                if (doc == null)
-                {
-                    doc = new BsonDocument { { "uuid", Uuid }, { "type", GetType().Name } };
-                    _collection.ReplaceOneAsync(Builders<BsonDocument>.Filter.Eq("uuid", Uuid), doc, new ReplaceOptions { IsUpsert = true }).Wait();
-                }
+                    .FindAsync(Builders<BsonDocument>.Filter.Eq("_id", Id)).Result
+                    .First();
 
                 return doc;
             }
         }
 
-        protected ComponentBase(IMongoCollection<BsonDocument> collection, string uuid = null)
+        protected ComponentBase(IMongoCollection<BsonDocument> collection, ObjectId? id = null)
         {
             _collection = collection.WithWriteConcern(WriteConcern.Acknowledged);
-            Uuid = uuid ?? Guid.NewGuid().ToString();
+            Id = id ?? ObjectId.GenerateNewId();
+            if (id == null)
+            {
+                PokeDatabase();
+            }
         }
 
         public Core Core { get; set; }
 
-        public string Uuid { get; }
+        public ObjectId Id { get; }
 
-        public virtual void Init()
+        public virtual void Start()
+        {
+            // Method intentionally left empty.
+        }
+
+        public virtual void Stop()
         {
             // Method intentionally left empty.
         }
@@ -121,7 +126,7 @@ namespace GrabbotPrime.Component
 
         public override string ToString()
         {
-            return $"{GetType().Name} {Uuid}";
+            return $"{GetType().Name} {Id}";
         }
 
         protected BsonValue GetPropertyByName(string name)
@@ -140,8 +145,14 @@ namespace GrabbotPrime.Component
                 var doc = InternalDocument;
                 doc[name] = value;
 
-                _collection.ReplaceOneAsync(Builders<BsonDocument>.Filter.Eq("uuid", Uuid), doc, new ReplaceOptions { IsUpsert = true }).Wait();
+                _collection.ReplaceOneAsync(Builders<BsonDocument>.Filter.Eq("_id", Id), doc, new ReplaceOptions { IsUpsert = true }).Wait();
             }
+        }
+
+        private void PokeDatabase()
+        {
+            var doc = new BsonDocument { { "_id", Id }, { "type", GetType().Name } };
+            _collection.ReplaceOneAsync(Builders<BsonDocument>.Filter.Eq("_id", Id), doc, new ReplaceOptions { IsUpsert = true }).Wait();
         }
     }
 }

@@ -54,6 +54,7 @@ namespace GrabbotPrime.Integrations.Base.Commands.Devices.Lighting
                 if (state == "on" || state == "off")
                 {
                     light.On = state != "off";
+                    light.Brightness = 100;
                 }
                 else if (state == "rainbow")
                 {

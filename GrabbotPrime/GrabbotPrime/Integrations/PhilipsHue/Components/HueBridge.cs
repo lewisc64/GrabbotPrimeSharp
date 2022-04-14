@@ -41,14 +41,14 @@ namespace GrabbotPrime.Integrations.PhilipsHue
 
         private Bridge Bridge { get; set; }
 
-        public HueBridge(IMongoCollection<BsonDocument> collection, string uuid = null)
-            : base(collection, uuid: uuid)
+        public HueBridge(IMongoCollection<BsonDocument> collection, ObjectId? id = null)
+            : base(collection, id: id)
         {
         }
 
-        public override void Init()
+        public override void Start()
         {
-            base.Init();
+            base.Start();
 
             if (BridgeId == null)
             {
