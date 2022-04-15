@@ -9,6 +9,6 @@ namespace GrabbotPrime.Integrations.Base.Components
     {
         IAudioStreamSource Source { get; }
 
-        Task Play(CancellationToken cancellationToken, Action donePlayingCallback = null);
+        Task Play(CancellationToken cancellationToken);
     }
 }

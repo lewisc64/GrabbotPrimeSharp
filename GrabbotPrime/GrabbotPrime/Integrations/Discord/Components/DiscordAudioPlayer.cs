@@ -25,32 +25,25 @@ namespace GrabbotPrime.Integrations.Discord.Components
             Source = source;
         }
 
-        public async Task Play(CancellationToken cancellationToken, Action donePlayingCallback = null)
+        public async Task Play(CancellationToken cancellationToken)
         {
-            try
+            if (_channel.IsDm)
             {
-                if (_channel.IsDm)
-                {
-                    throw new NotSupportedException();
-                }
-
-                var voiceChannel = _channel.Guild.VoiceStates.FirstOrDefault(x => x.User == _user)?.Channel;
-
-                if (voiceChannel == null)
-                {
-                    throw new NotSupportedException();
-                }
-
-                voiceChannel.Guild.VoiceConnection?.Disconnect();
-
-                using (var connection = voiceChannel.ConnectVoice())
-                {
-                    await connection.PlayAudio(new AudioFile(Source.StreamUrl), cancellationToken: cancellationToken);
-                }
+                throw new NotSupportedException();
             }
-            finally
+
+            var voiceChannel = _channel.Guild.VoiceStates.FirstOrDefault(x => x.User == _user)?.Channel;
+
+            if (voiceChannel == null)
             {
-                donePlayingCallback?.Invoke();
+                throw new NotSupportedException();
+            }
+
+            voiceChannel.Guild.VoiceConnection?.Disconnect();
+
+            using (var connection = voiceChannel.ConnectVoice())
+            {
+                await connection.PlayAudio(new AudioFile(Source.StreamUrl), cancellationToken: cancellationToken);
             }
         }
     }

@@ -53,9 +53,13 @@ namespace GrabbotPrime.Integrations.Base.Components
                     {
                         ActivePlayer = Queue.Peek();
                         AudioCancellationTokenSource = new CancellationTokenSource();
-                        Task.Run(() =>
+                        Task.Run(async () =>
                         {
-                            ActivePlayer.Play(AudioCancellationTokenSource.Token, donePlayingCallback: () =>
+                            try
+                            {
+                                await ActivePlayer.Play(AudioCancellationTokenSource.Token);
+                            }
+                            finally
                             {
                                 ActivePlayer = null;
                                 if (!AudioCancellationTokenSource.IsCancellationRequested)
@@ -65,7 +69,7 @@ namespace GrabbotPrime.Integrations.Base.Components
                                         Queue.Dequeue();
                                     }
                                 }
-                            });
+                            }
                         });
                     }
                 }
