@@ -59,9 +59,9 @@ namespace GrabbotPrime.Integrations.Youtube.Components
         {
         }
 
-        public override void Start()
+        public override async Task Start()
         {
-            base.Start();
+            await base.Start();
 
             if (!Priority.HasValue)
             {

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace GrabbotPrime.Component
 {
@@ -30,13 +31,13 @@ namespace GrabbotPrime.Component
 
         ObjectId Id { get; }
 
-        void Start();
+        Task Start();
 
-        void Stop();
+        Task Stop();
 
-        void Tick();
+        Task Tick();
 
-        void TickRare();
+        Task TickRare();
     }
 
     public interface IHasDevices : IComponent
@@ -104,24 +105,28 @@ namespace GrabbotPrime.Component
 
         public ObjectId Id { get; }
 
-        public virtual void Start()
+        public virtual Task Start()
         {
             // Method intentionally left empty.
+            return Task.CompletedTask;
         }
 
-        public virtual void Stop()
+        public virtual Task Stop()
         {
             // Method intentionally left empty.
+            return Task.CompletedTask;
         }
 
-        public virtual void Tick()
+        public virtual Task Tick()
         {
             // Method intentionally left empty.
+            return Task.CompletedTask;
         }
 
-        public virtual void TickRare()
+        public virtual Task TickRare()
         {
             // Method intentionally left empty.
+            return Task.CompletedTask;
         }
 
         public override string ToString()

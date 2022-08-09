@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace GrabbotPrime.Integrations.Bing.Components
 {
@@ -58,9 +59,9 @@ namespace GrabbotPrime.Integrations.Bing.Components
         {
         }
 
-        public override void Start()
+        public override async Task Start()
         {
-            base.Start();
+            await base.Start();
 
             if (!Priority.HasValue)
             {

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace GrabbotPrime
 {
@@ -20,13 +21,11 @@ namespace GrabbotPrime
 
         private readonly IMongoClient _mongoClient;
 
-        private readonly object _componentsLock = new object();
+        private readonly SemaphoreSlim _componentsSemaphore = new SemaphoreSlim(1);
 
         public Core(IMongoClient mongoClient)
         {
             _mongoClient = mongoClient;
-
-            LoadComponents();
         }
 
         public bool Running { get; private set; } = false;
@@ -41,7 +40,7 @@ namespace GrabbotPrime
 
         private IMongoCollection<BsonDocument> RemoteComponentsCollection => Database.GetCollection<BsonDocument>(ComponentsCollectionName);
 
-        public void Start()
+        public async Task Start()
         {
             if (Running)
             {
@@ -51,7 +50,7 @@ namespace GrabbotPrime
 
             foreach (var component in Components)
             {
-                component.Start();
+                await component.Start();
             }
 
             foreach (var command in Commands)
@@ -60,11 +59,11 @@ namespace GrabbotPrime
             }
 
             Running = true;
-            new Thread(TickLoop).Start();
-            new Thread(TickLoopRare).Start();
+            new Thread(async () => await TickLoop()).Start();
+            new Thread(async () => await TickLoopRare()).Start();
         }
 
-        public void TickLoop()
+        public async Task TickLoop()
         {
             var timer = new Driscod.Audio.DriftTimer(TimeSpan.FromMilliseconds(20));
 
@@ -74,7 +73,7 @@ namespace GrabbotPrime
                 {
                     try
                     {
-                        component.Tick();
+                        await component.Tick();
                     }
                     catch (Exception ex)
                     {
@@ -85,19 +84,20 @@ namespace GrabbotPrime
             }
         }
 
-        public void TickLoopRare()
+        public async Task TickLoopRare()
         {
             var timer = new Driscod.Audio.DriftTimer(TimeSpan.FromSeconds(60));
 
             while (Running)
             {
-                lock (_componentsLock)
+                await _componentsSemaphore.WaitAsync();
+                try
                 {
                     foreach (var component in Components)
                     {
                         try
                         {
-                            component.TickRare();
+                            await component.TickRare();
                         }
                         catch (Exception ex)
                         {
@@ -105,16 +105,20 @@ namespace GrabbotPrime
                         }
                     }
                 }
+                finally
+                {
+                    _componentsSemaphore.Release();
+                }
 
-                PruneComponents();
-
-                timer.Wait().Wait();
+                await PruneComponents();
+                await timer.Wait();
             }
         }
 
-        public void PruneComponents()
+        public async Task PruneComponents()
         {
-            lock (_componentsLock)
+            await _componentsSemaphore.WaitAsync();
+            try
             {
                 var destroy = new List<IComponent>();
                 foreach (var component in Components)
@@ -131,7 +135,7 @@ namespace GrabbotPrime
                 {
                     try
                     {
-                        component.Stop();
+                        await component.Stop();
                         Components.Remove(component);
                         Logger.Info($"Component '{component}' has been destroyed.");
                     }
@@ -140,6 +144,10 @@ namespace GrabbotPrime
                         Logger.Error(ex, $"Failed to destroy component '{component}'.");
                     }
                 }
+            }
+            finally
+            {
+                _componentsSemaphore.Release();
             }
         }
 
@@ -205,10 +213,11 @@ namespace GrabbotPrime
                 .Aggregate(new List<IDevice>(), (acc, devices) => { acc.AddRange(devices); return acc; });
         }
 
-        public void LoadComponents()
+        public async Task LoadComponentsFromDatabase()
         {
             Logger.Info("Loading components from database...");
-            lock (_componentsLock)
+            await _componentsSemaphore.WaitAsync();
+            try
             {
                 Components.Clear();
                 foreach (var document in RemoteComponentsCollection.FindAsync(Builders<BsonDocument>.Filter.Empty).Result.ToEnumerable())
@@ -233,9 +242,13 @@ namespace GrabbotPrime
 
                     if (Running)
                     {
-                        component.Start();
+                        await component.Start();
                     }
                 }
+            }
+            finally
+            {
+                _componentsSemaphore.Release();
             }
         }
 

@@ -6,6 +6,7 @@ using MongoDB.Driver;
 using Phew;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace GrabbotPrime.Integrations.PhilipsHue
 {
@@ -46,9 +47,9 @@ namespace GrabbotPrime.Integrations.PhilipsHue
         {
         }
 
-        public override void Start()
+        public override async Task Start()
         {
-            base.Start();
+            await base.Start();
 
             if (BridgeId == null)
             {

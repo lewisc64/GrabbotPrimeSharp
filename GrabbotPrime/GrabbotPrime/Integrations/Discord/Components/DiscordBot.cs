@@ -62,9 +62,9 @@ namespace GrabbotPrime.Integrations.Discord.Components
         {
         }
 
-        public override void Start()
+        public override async Task Start()
         {
-            base.Start();
+            await base.Start();
 
             if (CommandRegex == null)
             {
@@ -86,7 +86,7 @@ namespace GrabbotPrime.Integrations.Discord.Components
             Gateway.DetailedLogging = true;
 
             Bot = new Bot(Token, Intents.All);
-            Bot.Start();
+            await Bot.Start();
 
             Bot.OnMessage += async (_, message) =>
             {
@@ -111,16 +111,16 @@ namespace GrabbotPrime.Integrations.Discord.Components
                 var wordList = content.Split(new[] { '\r', '\n' }).Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
 
                 var random = new Random();
-                Bot.GetObject<User>(Environment.GetEnvironmentVariable("TARGET_DISCORD_ID")).SendMessage(wordList[random.Next(wordList.Length)]);
+                await Bot.GetObject<User>(Environment.GetEnvironmentVariable("TARGET_DISCORD_ID")).SendMessage(wordList[random.Next(wordList.Length)]);
             }
 
             Logger.Info($"Started '{Bot.User.Username}#{Bot.User.Discriminator}'.");
         }
 
-        public override void Stop()
+        public override async Task Stop()
         {
-            base.Stop();
-            Bot.Stop();
+            await base.Stop();
+            await Bot.Stop();
         }
 
         private async Task OnMessage(Message initialMessage)
@@ -162,11 +162,11 @@ namespace GrabbotPrime.Integrations.Discord.Components
 
                     if (!target.IsBot)
                     {
-                        channel = target.DmChannel;
+                        channel = await target.GetDmChannel();
                     }
                     else
                     {
-                        channel.SendMessage("Cannot DM bot users.");
+                        await channel.SendMessage("Cannot DM bot users.");
                         return;
                     }
                 }

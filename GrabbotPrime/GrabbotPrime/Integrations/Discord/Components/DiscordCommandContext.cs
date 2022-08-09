@@ -27,15 +27,14 @@ namespace GrabbotPrime.Integrations.Discord.Components
             return new DiscordAudioPlayer(_channel, _user, source);
         }
 
-        public Task SendMessage(string message)
+        public async Task SendMessage(string message)
         {
-            _channel.SendMessage(message);
-            return Task.CompletedTask;
+            await _channel.SendMessage(message);
         }
 
-        public Task SendImage(string url, string caption = null)
+        public async Task SendImage(string url, string caption = null)
         {
-            _channel.SendMessage(new MessageEmbed
+            await _channel.SendMessage(new MessageEmbed
             {
                 Title = caption,
                 Image = new MessageEmbed.ImageInfo
@@ -43,7 +42,6 @@ namespace GrabbotPrime.Integrations.Discord.Components
                     Url = url,
                 },
             });
-            return Task.CompletedTask;
         }
 
         public async Task<string> WaitForMessage()
@@ -66,7 +64,7 @@ namespace GrabbotPrime.Integrations.Discord.Components
 
                 if (!tcs.Task.IsCompleted)
                 {
-                    _channel.SendMessage("Timed out.");
+                    await _channel.SendMessage("Timed out.");
                     throw new TimeoutException();
                 }
 

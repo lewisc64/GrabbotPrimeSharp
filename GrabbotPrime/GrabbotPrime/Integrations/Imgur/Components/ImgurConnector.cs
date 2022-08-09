@@ -2,6 +2,7 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace GrabbotPrime.Integrations.Imgur.Components
 {
@@ -67,9 +68,9 @@ namespace GrabbotPrime.Integrations.Imgur.Components
         {
         }
 
-        public override void Start()
+        public override async Task Start()
         {
-            base.Start();
+            await base.Start();
 
             if (ImgurClientId == null || ImgurClientId == "REPLACE_WITH_CLIENT_ID")
             {

@@ -32,14 +32,14 @@ namespace GrabbotPrime.Integrations.Base.Components
         {
         }
 
-        public override void Start()
+        public override async Task Start()
         {
-            base.Start();
+            await base.Start();
         }
 
-        public override void Tick()
+        public override async Task Tick()
         {
-            base.Tick();
+            await base.Tick();
 
             lock (_lock)
             {
